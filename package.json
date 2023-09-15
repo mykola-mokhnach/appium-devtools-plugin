@@ -35,13 +35,13 @@
     "build": "tsc -b",
     "clean": "npm run build -- --clean",
     "dev": "npm run build -- --watch",
-    "e2e-test": "mocha --exit --timeout 10m \"./test/functional/**/*-specs.js\"",
+    "e2e-test": "mocha --exit --timeout 10m \"./test/functional/**/*.e2e.spec.js\"",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "lint:staged": "lint-staged",
     "prepare": "npm run rebuild",
     "rebuild": "npm run clean && npm run build",
-    "test": "mocha --exit --timeout 1m \"./test/unit/**/*-specs.js\""
+    "test": "mocha --exit --timeout 1m \"./test/unit/**/*.spec.js\""
   },
   "dependencies": {
     "axios": "^1.5.0",
@@ -74,7 +74,6 @@
     "@appium/test-support": "^3.0.0",
     "@appium/tsconfig": "^0.3.0",
     "@appium/types": "^0.13.4",
-    "@appium/plugin-test-support": "^0.x",
     "@commitlint/cli": "^17.6.3",
     "@commitlint/config-conventional": "^17.6.3",
     "@semantic-release/changelog": "^6.0.1",

@@ -1,36 +1,23 @@
-import path from 'path';
 import {remote as wdio} from 'webdriverio';
-import {pluginE2EHarness} from '@appium/plugin-test-support';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 
-const THIS_PLUGIN_DIR = path.join(__dirname, '..', '..');
-const APPIUM_HOME = path.join(THIS_PLUGIN_DIR, 'local_appium_home');
-const FAKE_DRIVER_DIR = path.join(THIS_PLUGIN_DIR, '..', 'fake-driver');
-const TEST_HOST = 'localhost';
-const TEST_PORT = 4723;
-const TEST_FAKE_APP = path.join(
-  APPIUM_HOME,
-  'node_modules',
-  '@appium',
-  'fake-driver',
-  'test',
-  'fixtures',
-  'app.xml'
-);
+chai.should();
+chai.use(chaiAsPromised);
+
 const TEST_CAPS = {
-  platformName: 'Fake',
-  'appium:automationName': 'Fake',
-  'appium:deviceName': 'Fake',
-  'appium:app': TEST_FAKE_APP,
+  platformName: 'Android',
+  'appium:automationName': 'uiautomator2',
 };
 const WDIO_OPTS = {
-  hostname: TEST_HOST,
-  port: TEST_PORT,
+  hostname: process.env.APPIUM_TEST_SERVER_HOST ?? '127.0.0.1',
+  port: process.env.APPIUM_TEST_SERVER_PORT ?? 4723,
   connectionRetryCount: 0,
   capabilities: TEST_CAPS,
 };
 
 describe('DevtoolsPlugin', function () {
-  let server;
+  /** @type {import('webdriverio').Browser} */
   let driver;
 
   beforeEach(async function () {
@@ -43,19 +30,12 @@ describe('DevtoolsPlugin', function () {
     }
   });
 
-  pluginE2EHarness({
-    before,
-    after,
-    server,
-    port: TEST_PORT,
-    host: TEST_HOST,
-    appiumHome: APPIUM_HOME,
-    driverName: 'fake',
-    driverSource: 'local',
-    driverSpec: FAKE_DRIVER_DIR,
-    pluginName: 'devtools',
-    pluginSource: 'local',
-    pluginSpec: THIS_PLUGIN_DIR,
+  it('should list web views', async function () {
+    await driver.executeScript('mobile: startActivity', [{
+      component: 'com.android.chrome/com.google.android.apps.chrome.Main',
+      uri: 'https://google.com',
+    }]);
+    const {targets} = await driver.executeScript('devtools: listTargets');
+    targets.length.should.be.greaterThan(0);
   });
-
 });
