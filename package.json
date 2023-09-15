@@ -1,0 +1,105 @@
+{
+  "name": "appium-devtools-plugin",
+  "version": "0.0.1",
+  "description": "Plugin for exposing chromium devtools from Android devices",
+  "keywords": [
+    "automation",
+    "javascript",
+    "selenium",
+    "webdriver",
+    "android",
+    "devtools",
+    "testing"
+  ],
+  "homepage": "https://appium.io",
+  "bugs": {
+    "url": "https://github.com/mykola-mokhnach/appium-devtools-plugin/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mykola-mokhnach/appium-devtools-plugin.git",
+    "directory": "packages/images-plugin"
+  },
+  "license": "Apache-2.0",
+  "author": "Mykola Mokhnach",
+  "types": "./build/lib/plugin.d.ts",
+  "files": [
+    "build",
+    "docs",
+    "lib",
+    "index.js",
+    "tsconfig.json",
+    "!build/tsconfig.tsbuildinfo"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "npm run build -- --clean",
+    "dev": "npm run build -- --watch",
+    "e2e-test": "mocha --exit --timeout 10m \"./test/functional/**/*-specs.js\"",
+    "lint": "eslint .",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:staged": "lint-staged",
+    "prepare": "husky install && npm run rebuild",
+    "rebuild": "npm run clean && npm run build",
+    "test": "mocha --exit --timeout 1m \"./test/unit/**/*-specs.js\""
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "bluebird": "^3.7.2",
+    "lodash": "^4.17.21",
+    "portscanner": "^2.2.0",
+    "source-map-support": "^0.x",
+    "ws": "^8.13.0"
+  },
+  "peerDependencies": {
+    "appium": "^2.0.0"
+  },
+  "engines": {
+    "node": "^16.13.0 || >=18.0.0",
+    "npm": ">=8"
+  },
+  "appium": {
+    "pluginName": "devtools",
+    "mainClass": "DevtoolsPlugin"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "typedoc": {
+    "entryPoint": "./lib/plugin.js"
+  },
+  "devDependencies": {
+    "@appium/eslint-config-appium": "^6.0.0",
+    "@appium/support": "^4.0.1",
+    "@appium/test-support": "^3.0.0",
+    "@appium/tsconfig": "^0.3.0",
+    "@appium/types": "^0.13.4",
+    "@commitlint/cli": "^17.6.3",
+    "@commitlint/config-conventional": "^17.6.3",
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@types/bluebird": "^3.5.38",
+    "@types/chai": "^4.3.5",
+    "@types/chai-as-promised": "^7.1.5",
+    "@types/lodash": "^4.14.194",
+    "@types/node": "^20.2.3",
+    "@types/portscanner": "^2.1.1",
+    "@types/source-map-support": "^0.x",
+    "@types/ws": "^8.5.4",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "conventional-changelog-conventionalcommits": "^7.0.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-mocha": "^9.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "mocha": "^10.0.0",
+    "prettier": "^3.0.1",
+    "rimraf": "^5.0.0",
+    "semantic-release": "^21.1.0",
+    "sinon": "^15.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  }
+}
