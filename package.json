@@ -39,7 +39,7 @@
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "lint:staged": "lint-staged",
-    "prepare": "husky install && npm run rebuild",
+    "prepare": "npm run rebuild",
     "rebuild": "npm run clean && npm run build",
     "test": "mocha --exit --timeout 1m \"./test/unit/**/*-specs.js\""
   },
@@ -74,6 +74,7 @@
     "@appium/test-support": "^3.0.0",
     "@appium/tsconfig": "^0.3.0",
     "@appium/types": "^0.13.4",
+    "@appium/plugin-test-support": "^0.x",
     "@commitlint/cli": "^17.6.3",
     "@commitlint/config-conventional": "^17.6.3",
     "@semantic-release/changelog": "^6.0.1",
@@ -82,9 +83,13 @@
     "@types/chai": "^4.3.5",
     "@types/chai-as-promised": "^7.1.5",
     "@types/lodash": "^4.14.194",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^20.2.3",
     "@types/portscanner": "^2.1.1",
-    "@types/source-map-support": "^0.x",
+    "@types/semver": "^7.5.0",
+    "@types/sinon": "^10.0.15",
+    "@types/source-map-support": "^0.5.6",
+    "@types/teen_process": "^2.0.0",
     "@types/ws": "^8.5.4",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
@@ -100,6 +105,7 @@
     "semantic-release": "^21.1.0",
     "sinon": "^15.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "webdriverio": "^8.16.9"
   }
 }
