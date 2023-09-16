@@ -20,10 +20,6 @@ describe('DevtoolsPlugin', function () {
     plugin = new DevtoolsPlugin('devtools');
   });
 
-  afterEach(function () {
-    plugin = null;
-  });
-
   it('should init properties after session creation', async function () {
     _.isNil(plugin.adb).should.be.true;
     _.isNil(plugin.serverInfo).should.be.true;

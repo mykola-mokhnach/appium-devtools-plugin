@@ -11,7 +11,7 @@ const TEST_CAPS = {
 };
 const WDIO_OPTS = {
   hostname: process.env.APPIUM_TEST_SERVER_HOST ?? '127.0.0.1',
-  port: parseInt(process.env.APPIUM_TEST_SERVER_PORT, 10) || 4723,
+  port: parseInt(process.env.APPIUM_TEST_SERVER_PORT ?? '', 10) || 4723,
   connectionRetryCount: 0,
   capabilities: TEST_CAPS,
 };
@@ -35,7 +35,7 @@ describe('DevtoolsPlugin', function () {
       component: 'com.android.chrome/com.google.android.apps.chrome.Main',
       uri: 'https://google.com',
     }]);
-    const {targets} = await driver.executeScript('devtools: listTargets');
+    const {targets} = await driver.executeScript('devtools: listTargets', []);
     targets.length.should.be.greaterThan(0);
   });
 });
