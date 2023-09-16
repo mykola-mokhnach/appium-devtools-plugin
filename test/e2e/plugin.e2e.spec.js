@@ -11,7 +11,7 @@ const TEST_CAPS = {
 };
 const WDIO_OPTS = {
   hostname: process.env.APPIUM_TEST_SERVER_HOST ?? '127.0.0.1',
-  port: process.env.APPIUM_TEST_SERVER_PORT ?? 4723,
+  port: parseInt(process.env.APPIUM_TEST_SERVER_PORT, 10) || 4723,
   connectionRetryCount: 0,
   capabilities: TEST_CAPS,
 };
