@@ -1,6 +1,7 @@
 import {remote as wdio} from 'webdriverio';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import { waitForCondition } from 'asyncbox';
 
 chai.should();
 chai.use(chaiAsPromised);
@@ -35,7 +36,12 @@ describe('DevtoolsPlugin', function () {
       component: 'com.android.chrome/com.google.android.apps.chrome.Main',
       uri: 'https://google.com',
     }]);
-    const {targets} = await driver.executeScript('devtools: listTargets', []);
-    targets.length.should.be.greaterThan(0);
+    await waitForCondition(async () => {
+      const {targets} = await driver.executeScript('devtools: listTargets', []);
+      return targets.length;
+    }, {
+      waitMs: 5000,
+      intervalMs: 300,
+    });
   });
 });
