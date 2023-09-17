@@ -12,6 +12,9 @@ describe('DevtoolsPlugin', function () {
   const driverWithAdb = {
     adb: {},
     server: {},
+    serverHost: 'yolo',
+    serverPort: 1234,
+    serverPath: '/foo',
     sessionId: 'sessionId',
   };
   const driverWoAdb = _.omit(driverWithAdb, 'adb');

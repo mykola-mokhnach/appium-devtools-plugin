@@ -68,6 +68,7 @@
   "typedoc": {
     "entryPoint": "./lib/plugin.js"
   },
+  "main": "./build/index.js",
   "devDependencies": {
     "@appium/eslint-config-appium": "^6.0.0",
     "@appium/support": "^4.0.1",
