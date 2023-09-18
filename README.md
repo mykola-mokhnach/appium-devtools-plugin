@@ -101,4 +101,93 @@ name | string | yes | The name of the webview socket to stop the proxy for. Usua
 
 ## Usage
 
-TODO Examples
+```java
+
+private AndroidDriver driver;
+private static final Pattern BROWSER_MAJOR_VER_PATTERN = Pattern.compile("/(\\d+)");
+
+@BeforeEach
+void setup() {
+  // Espresso driver is supported as well
+  UiAutomator2Options options = new UiAutomator2Options();
+  driver = new AndroidDriver(options);
+}
+
+@AfterEach
+void teardown(){
+  driver.quit();
+}
+
+private DevTools initDevTools(URI uri, String browserMajorVersion) {
+  HttpClient.Factory factory = HttpClient.Factory.createDefault();
+  HttpClient client = CdpEndpointFinder.getHttpClient(factory, uri);
+  URI cdpUri = CdpEndpointFinder.getCdpEndPoint(client);
+  Connection connection = new Connection(client, cdpUri.toString());
+  CdpInfo cdpInfo = new CdpVersionFinder()
+    .match(browserMajorVersion)
+    .orElseThrow(
+      () -> new RuntimeException(
+        String.format(
+          "Unable to find version of CDP to use for %s. You may need to include a"
+              + " dependency on a specific version of the CDP using something"
+              + " similar to `org.seleniumhq.selenium:selenium-devtools-v86:%s`"
+              + " where the version (\"v86\") matches the version of the"
+              + " chromium-based browser you're using and the version number of the"
+              + " artifact is the same as Selenium's.",
+          browserMajorVersion, new BuildInfo().getReleaseLabel()
+        )
+      );
+    );
+  return new DevTools(cdpInfo::getDomains, connection);
+}
+
+private String extractMajorBrowserVersion(String version) {
+  Matcher matcher = BROWSER_MAJOR_VER_PATTERN.matcher(version);
+  if (!matcher.find()) {
+    throw new RuntimeException(String.format(
+      "No major browser version could be parsed from '%s'", version
+    ));
+  }
+  return matcher.group(1);
+}
+
+@Test
+void verifyMobileCdp() {
+  // ....
+  // manipulate the App under test or the browser, so a web view is active
+  // ....
+  Map<String, Object> wvInfo = (Map<String, Object>) driver.executeScript("devtools: listTargets");
+  List<Map<String, Object>> targets = (List<Map<String, Object>>) wvInfo.get("targets");
+  // There might be multiple targets or none
+  // depending on which web views are currently active and debuggable.
+  // We just want to interact with the very first one in this example
+  Map<String, Object> target = (Map<String, Object>) targets.get(0);
+  String wvName = (String) target.get("name");
+  Map<String, Object> proxyInfo = (Map<String, Object>) driver.executeScript(
+    "devtools: proxyTarget",
+    Map.of("name", wvName)
+  );
+
+  // Ususally, it looks like "Chrome/91.0.4472.114"
+  String browserVersion = (String) target.get("Browser");
+  try {
+    DevTools devtools = initDevtools(
+      Uri.parse((String) proxyInfo.get("root")),
+      extractMajorBrowserVersion(browserVersion)
+    );
+
+    devTools.createSession();
+    devTools.send(Network.clearBrowserCookies());
+    devTools.send(Network.setCacheDisabled(true));
+    // ...
+    // Continue doing crazy stuff with the devtools object
+    // ...
+  } finally {
+    // This will be done anyway automatically upon quitting the driver
+    driver.executeScript(
+      "devtools: unproxyTarget",
+      Map.of("name", wvName)
+    );
+  }
+}
+```
