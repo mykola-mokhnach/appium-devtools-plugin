@@ -34,7 +34,7 @@ perform an extended automation, like [performance metrics gathering](https://www
 Install the plugin using Appium's plugin CLI:
 
 ```
-appium plugin install --source git https://github.com/mykola-mokhnach/appium-devtools-plugin
+appium plugin install --source npm appium-devtools-plugin
 ```
 
 ## Installation - Client
