@@ -1,6 +1,6 @@
 {
   "name": "appium-devtools-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Plugin for exposing chromium devtools from Android devices",
   "keywords": [
     "automation",
