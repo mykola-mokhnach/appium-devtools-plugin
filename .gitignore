@@ -7,13 +7,4 @@ build
 coverage
 .nyc_output/
 package-lock.json*
-
-.idea
-target
-out
-bootstrap/bin/*
-!bootstrap/bin/AppiumBootstrap.jar
-bootstrap/local.properties
-bootstrap/.classpath
-bootstrap/target/
 .vscode

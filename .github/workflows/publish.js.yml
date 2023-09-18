@@ -15,7 +15,7 @@ jobs:
       with:
         node-version: lts/*
     - run: |
-        npm install -g appium@next
+        npm install -g appium
         npm install --no-package-lock
         npm run build
       name: Install dev dependencies
