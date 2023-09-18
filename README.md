@@ -65,7 +65,7 @@ name | string | The name of the CDP socket. Usually starts with `@` | @chrome_de
 pages | map[] | The list of pages in this webview. The output of [/json/list](https://chromedevtools.github.io/devtools-protocol/) endpoint | [ {"description": "", "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:9222/devtools/page/DAB7FB6187B554E10B0BD18821265734", "id": "DAB7FB6187B554E10B0BD18821265734", "title": "Yahoo", "type": "page", "url": "https://www.yahoo.com/", "webSocketDebuggerUrl": "ws://localhost:9222/devtools/page/DAB7FB6187B554E10B0BD18821265734"} ]
 info | map | The basic information about the current webview. This is the output of [/json/version](https://chromedevtools.github.io/devtools-protocol/) endpoint | {"Browser": "Chrome/72.0.3601.0", "Protocol-Version": "1.3", "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3601.0 Safari/537.36", "V8-Version": "7.2.233", "WebKit-Version": "537.36 (@cfede9db1d154de0468cb0538479f34c0755a0f4)", "webSocketDebuggerUrl": "ws://localhost:9222/devtools/browser/b0b8a4fb-bb17-4359-9533-a8d9f3908bd8"}
 isProxied | boolean | Whether the current webview is being proxied | false
-proxyInfo | map | The proxy information if the webview is being proxied, which consists of the following entries: `alias`, `name`, `root`. It is always `null` if `isProxied` is false. | {"alias":"1ca57bc449240dfeb716e8a5adb95849bcfdd49f","name":"@chrome_devtools_remote","root":"http://127.0.0.1:4723/cdp/ed3c4d2f-7b34-4563-9a3c-e6af20418500/1ca57bc449240dfeb716e8a5adb95849bcfdd49f"}
+proxyInfo | map | The proxy information if the webview is being proxied, which consists of the following entries: `alias`, `name`, `root`, `uuid`. It is always `null` if `isProxied` is false. | {"alias":"1ca57bc449240dfeb716e8a5adb95849bcfdd49f","name":"@chrome_devtools_remote","uuid": "ed3c4d2f-7b34-4563-9a3c-e6af20418500", "root":"http://127.0.0.1:4723/cdp/ed3c4d2f-7b34-4563-9a3c-e6af20418500/1ca57bc449240dfeb716e8a5adb95849bcfdd49f"}
 
 ### devtools: proxyTarget
 
@@ -84,8 +84,9 @@ If the corresponding CDP API has been forwarded successfully then the following 
 
 Name | Type | Description | Example
 --- | --- | --- | ---
-alias | string | Unique alias for the given webview name. It is used to construct the forward URL | 1ca57bc449240dfeb716e8a5adb95849bcfdd49f
 name | string | The name of the webview being forwarded | @chrome_devtools_remote
+alias | string | Unique alias for the given webview name. It is used to construct the forward URL | 1ca57bc449240dfeb716e8a5adb95849bcfdd49f
+uuid | string | The unique identifier of the current plugin instance. It is used to construct the forward URL | ed3c4d2f-7b34-4563-9a3c-e6af20418500
 root | string | The forwarding root URL used as a base for all CDP endpoints | http://127.0.0.1:4723/cdp/ed3c4d2f-7b34-4563-9a3c-e6af20418500/1ca57bc449240dfeb716e8a5adb95849bcfdd49f
 
 ### devtools: unproxyTarget
