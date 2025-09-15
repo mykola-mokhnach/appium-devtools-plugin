@@ -4,6 +4,9 @@ This plugin is created to expose [Chrome Devtools Protocol](https://chromedevtoo
 Afterwards this API could be used to establish a connection to it from an external client and to
 perform an extended automation, like [performance metrics gathering](https://www.selenium.dev/documentation/webdriver/bidirectional/chrome_devtools/#collect-performance-metrics) or [geolocation emulation](https://www.selenium.dev/documentation/webdriver/bidirectional/chrome_devtools/#emulate-geo-location-with-the-remote-webdriver).
 
+> [!IMPORTANT]
+> Since major version *1.0.0*, this plugin is only compatible with Appium 3.
+
 ## Features
 
 * Adds the following execute methods:
@@ -26,7 +29,7 @@ perform an extended automation, like [performance metrics gathering](https://www
 
 ## Prerequisites
 
-* Appium Server 2.0+
+* Appium Server 3.0+
 * [UIAutomator2](https://github.com/appium/appium-uiautomator2-driver) or [Espresso](https://github.com/appium/appium-espresso-driver) driver
 
 ## Installation - Server

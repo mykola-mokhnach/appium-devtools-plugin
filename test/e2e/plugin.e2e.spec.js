@@ -1,10 +1,5 @@
 import {remote as wdio} from 'webdriverio';
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
 import { waitForCondition } from 'asyncbox';
-
-chai.should();
-chai.use(chaiAsPromised);
 
 const TEST_CAPS = {
   platformName: 'Android',
@@ -20,6 +15,15 @@ const WDIO_OPTS = {
 describe('DevtoolsPlugin', function () {
   /** @type {import('webdriverio').Browser} */
   let driver;
+  let chai;
+
+  before(async function () {
+    chai = await import('chai');
+    const chaiAsPromised = await import('chai-as-promised');
+
+    chai.should();
+    chai.use(chaiAsPromised.default);
+  });
 
   beforeEach(async function () {
     driver = await wdio(WDIO_OPTS);

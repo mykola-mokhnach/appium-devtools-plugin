@@ -1,11 +1,16 @@
 import { replaceDeep } from '../../lib/utils';
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-
-chai.should();
-chai.use(chaiAsPromised);
 
 describe('utils', function () {
+  let chai;
+
+  before(async function () {
+    chai = await import('chai');
+    const chaiAsPromised = await import('chai-as-promised');
+
+    chai.should();
+    chai.use(chaiAsPromised.default);
+  });
+
   it('should perform deep replacement', function () {
     const replaceMap = [[
         'ws://localhost:9222/devtools/page/DAB7FB6187B554E10B0BD18821265734',

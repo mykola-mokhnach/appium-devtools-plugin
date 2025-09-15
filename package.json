@@ -44,7 +44,7 @@
     "test": "mocha --exit --timeout 1m \"./test/unit/**/*.spec.js\""
   },
   "dependencies": {
-    "axios": "^1.5.0",
+    "axios": "^1.12.0",
     "bluebird": "^3.7.2",
     "lodash": "^4.17.21",
     "portscanner": "^2.2.0",
@@ -52,11 +52,11 @@
     "ws": "^8.13.0"
   },
   "peerDependencies": {
-    "appium": "^2.0.0"
+    "appium": "^3.0.0-rc.2"
   },
   "engines": {
-    "node": "^16.13.0 || >=18.0.0",
-    "npm": ">=8"
+    "node": "^20.19.0 || ^22.12.0 || >=24.0.0",
+    "npm": ">=10"
   },
   "appium": {
     "pluginName": "devtools",
@@ -70,43 +70,24 @@
   },
   "main": "./build/index.js",
   "devDependencies": {
-    "@appium/eslint-config-appium": "^6.0.0",
-    "@appium/support": "^4.0.1",
-    "@appium/test-support": "^3.0.0",
-    "@appium/tsconfig": "^0.x",
-    "@appium/types": "^0.x",
-    "@commitlint/cli": "^18.0.0",
-    "@commitlint/config-conventional": "^18.0.0",
+    "@appium/eslint-config-appium-ts": "^2.0.0",
+    "@appium/support": "^7.0.0",
+    "@appium/tsconfig": "^1.0.0",
+    "@appium/types": "^1.0.0",
     "@semantic-release/changelog": "^6.0.1",
     "@semantic-release/git": "^10.0.1",
-    "@types/bluebird": "^3.5.38",
-    "@types/chai": "^4.3.5",
-    "@types/chai-as-promised": "^7.1.5",
-    "@types/lodash": "^4.14.194",
-    "@types/mocha": "^10.0.1",
+    "@types/express": "^5.0.3",
     "@types/node": "^20.2.3",
-    "@types/portscanner": "^2.1.1",
-    "@types/semver": "^7.5.0",
-    "@types/sinon": "^17.0.1",
-    "@types/source-map-support": "^0.5.6",
-    "@types/teen_process": "^2.0.0",
-    "@types/ws": "^8.5.4",
     "asyncbox": "^3.0.0",
-    "chai": "^4.1.2",
-    "chai-as-promised": "^7.1.1",
-    "conventional-changelog-conventionalcommits": "^7.0.1",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-mocha": "^9.0.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "mocha": "^10.0.0",
+    "chai": "^6.0.0",
+    "chai-as-promised": "^8.0.0",
+    "conventional-changelog-conventionalcommits": "^9.0.0",
+    "mocha": "^11.0.1",
     "prettier": "^3.0.1",
-    "rimraf": "^5.0.0",
-    "semantic-release": "^22.0.8",
-    "sinon": "^17.0.0",
+    "semantic-release": "^24.0.0",
+    "sinon": "^21.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.6",
-    "webdriverio": "^8.16.9"
+    "typescript": "^5.4.2",
+    "webdriverio": "^9.4.1"
   }
 }

@@ -1,10 +1,5 @@
 import _ from 'lodash';
 import { DevtoolsPlugin } from '../../lib/plugin';
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-
-chai.should();
-chai.use(chaiAsPromised);
 
 describe('DevtoolsPlugin', function () {
   /** @type {DevtoolsPlugin} */
@@ -13,6 +8,15 @@ describe('DevtoolsPlugin', function () {
     adb: {},
   };
   const driverWoAdb = _.omit(driverWithAdb, 'adb');
+  let chai;
+
+  before(async function () {
+    chai = await import('chai');
+    const chaiAsPromised = await import('chai-as-promised');
+
+    chai.should();
+    chai.use(chaiAsPromised.default);
+  });
 
   beforeEach(function () {
     plugin = new DevtoolsPlugin('devtools');

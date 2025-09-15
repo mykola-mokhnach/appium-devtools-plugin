@@ -1,6 +1,7 @@
 name: Conventional Commits
 on:
   pull_request:
+    types: [opened, edited, synchronize, reopened]
 
 
 jobs:
@@ -8,8 +9,8 @@ jobs:
     name: https://www.conventionalcommits.org
     runs-on: ubuntu-latest
     steps:
-      - uses: beemojs/conventional-pr-action@v2
-        with:
-          config-preset: angular
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: beemojs/conventional-pr-action@v3
+      with:
+        config-preset: angular
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

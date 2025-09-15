@@ -5,7 +5,7 @@
     "strict": false,
     "checkJs": true,
     "outDir": "build",
-    "types": ["node", "mocha", "chai", "chai-as-promised", "sinon"]
+    "types": ["node"]
   },
   "include": [
     "index.js",
