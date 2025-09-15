@@ -22,11 +22,9 @@ jobs:
       APPIUM_TEST_SERVER_PORT: 4567
       APPIUM_TEST_SERVER_HOST: 127.0.0.1
       _FORCE_LOGS: 1
-    # No hardware acceleration is available for emulators on Ubuntu:
-    # https://github.com/marketplace/actions/android-emulator-runner#can-i-use-this-action-on-linux-vms
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-node@v3
       with:
         node-version: lts/*
@@ -34,7 +32,12 @@ jobs:
     - uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
-        java-version: '11'
+        java-version: '17'
+    - name: Enable KVM group perms
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
     - run: npm install
       name: Install dev dependencies
     - run: |
@@ -64,6 +67,7 @@ jobs:
         sdcard-path-or-size: 1500M
         api-level: ${{ matrix.apiLevel }}
         disable-spellchecker: true
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
         target: ${{ matrix.emuTag }}
         arch: ${{ matrix.arch }}
         ram-size: 4096M
