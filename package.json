@@ -78,7 +78,7 @@
     "@semantic-release/git": "^10.0.1",
     "@types/express": "^5.0.3",
     "@types/node": "^24.6.0",
-    "asyncbox": "^3.0.0",
+    "asyncbox": "^4.0.1",
     "chai": "^6.0.0",
     "chai-as-promised": "^8.0.0",
     "conventional-changelog-conventionalcommits": "^9.0.0",
