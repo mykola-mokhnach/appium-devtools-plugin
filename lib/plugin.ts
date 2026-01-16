@@ -6,50 +6,25 @@ import * as proxyMethods from './mixins/proxy';
 import * as cmdMethods from './mixins/cmds';
 import { CDP_METHODS_ROOT } from './constants';
 import { registerPlugin, findPlugin } from './registry';
-import logger from './logger';
+import { log as logger } from './logger';
+import type { BaseDriver } from 'appium/driver';
+import type { ExecuteMethodMap } from '@appium/types';
 
-/**
- * @typedef {Object} ProxyInfo
- * @property {string} name
- * @property {string} uuid
- * @property {string} alias
- * @property {string} root
- */
+type Driver = BaseDriver<any, any, any, any, any, any>;
+import type { Express, Request, Response } from 'express';
+import type { ProxiedSession } from './types';
 
-/**
- * @typedef {Object} ProxiedSession
- * @property {string} name
- * @property {string} alias
- * @property {string} root
- * @property {string} browserDebuggerPathname
- * @property {string} pageDebuggerPathname
- * @property {number} port
- * @property {[string|RegExp, string][]} rewrites
- */
+export class DevtoolsPlugin extends BasePlugin {
+  private driverRef: WeakRef<Driver> | null = null;
+  readonly proxiedSessions: Record<string, ProxiedSession> = {};
+  readonly uuid: string = util.uuidV4();
 
-export default class DevtoolsPlugin extends BasePlugin {
-
-  /** @type {WeakRef<import('appium/driver').BaseDriver>?} */
-  driverRef;
-
-  /** @type {Record<string, ProxiedSession>} */
-  proxiedSessions;
-
-  /** @type {string} */
-  uuid;
-
-  /**
-   * @param {string} pluginName
-   */
-  constructor(pluginName) {
+  constructor(pluginName: string) {
     super(pluginName);
-    this.driverRef = null;
-    this.proxiedSessions = {};
-    this.uuid = util.uuidV4();
     registerPlugin(this);
   }
 
-  static executeMethodMap = /** @type {const} */ ({
+  static readonly executeMethodMap: ExecuteMethodMap<DevtoolsPlugin> = {
     'devtools: listTargets': {
       command: 'listDevtoolsTargets',
     },
@@ -66,15 +41,21 @@ export default class DevtoolsPlugin extends BasePlugin {
         required: ['name'],
       },
     }
-  });
+  } as const;
 
-  /** @type {import('@appium/types').UpdateServerCallback} */
-  static async updateServer(expressApp) {
+  /**
+   * Registers HTTP endpoints for Chrome DevTools Protocol access.
+   * Sets up routes for version info, target listing, protocol schema, tab management,
+   * and the DevTools inspector interface.
+   *
+   * @param expressApp - The Express application instance to register routes on
+   */
+  static async updateServer(expressApp: Express): Promise<void> {
     const buildHanlder = (
-      /** @type {string} */methodName,
+      methodName: string,
     ) => async (
-      /** @type {import('express').Request} */ req,
-      /** @type {import('express').Response} */ res
+      req: Request,
+      res: Response
     ) => {
       const uuid = Array.isArray(req.params.uuid) ? req.params.uuid[0] : req.params.uuid;
       const plugin = findPlugin(uuid);
@@ -84,10 +65,9 @@ export default class DevtoolsPlugin extends BasePlugin {
         return;
       }
       try {
-        // eslint-disable-next-line import/namespace
-        const result = await cmdMethods[methodName].bind(plugin)(req);
+        const result = await (cmdMethods as any)[methodName].bind(plugin)(req);
         res.status(200).json(result);
-      } catch (e) {
+      } catch (e: any) {
         logger.warn(`Got an unexpected error while executing devtools method '${methodName}': ${e.message}`);
         logger.debug(e.stack);
         res.status(404).send();
@@ -111,18 +91,27 @@ export default class DevtoolsPlugin extends BasePlugin {
     );
   }
 
-  /** @returns {import('appium/driver').BaseDriver?} */
-  get driver () {
+  /**
+   * Gets the current driver instance, if available.
+   *
+   * @returns The driver instance or null if not available
+   */
+  get driver(): Driver | null {
     return this.driverRef?.deref() ?? null;
   }
 
   /**
-   * @param {() => Promise<any>} next
-   * @param {import('appium/driver').BaseDriver} driver
-   * @param {string} cmdName
-   * @param {...any} cmdArgs
+   * Handles Appium commands, intercepting 'execute' and 'deleteSession' commands.
+   * Initializes the driver reference when a session is created with an Android driver,
+   * and cleans up proxied sessions when a session is deleted.
+   *
+   * @param next - The next handler in the plugin chain
+   * @param driver - The Appium driver instance
+   * @param cmdName - The name of the command being executed
+   * @param cmdArgs - Additional arguments for the command
+   * @returns The result of the command execution
    */
-  async handle(next, driver, cmdName, ...cmdArgs) {
+  async handle(next: () => Promise<any>, driver: Driver, cmdName: string, ...cmdArgs: any[]): Promise<any> {
     if (!this.driverRef && 'adb' in driver && driver.adb) {
       this.driverRef = new WeakRef(driver);
       this.log.info(`Successfully initialized with ${driver.constructor.name}`);
@@ -151,5 +140,3 @@ export default class DevtoolsPlugin extends BasePlugin {
   proxyDevtoolsTarget = proxyMethods.proxyDevtoolsTarget;
   unproxyDevtoolsTarget = proxyMethods.unproxyDevtoolsTarget;
 }
-
-export {DevtoolsPlugin};

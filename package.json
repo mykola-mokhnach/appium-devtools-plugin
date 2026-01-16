@@ -22,12 +22,11 @@
   },
   "license": "Apache-2.0",
   "author": "Mykola Mokhnach",
-  "types": "./build/lib/plugin.d.ts",
+  "types": "./build/lib/index.d.ts",
   "files": [
     "build",
     "docs",
     "lib",
-    "index.js",
     "tsconfig.json",
     "!build/tsconfig.tsbuildinfo"
   ],
@@ -35,13 +34,13 @@
     "build": "tsc -b",
     "clean": "npm run build -- --clean",
     "dev": "npm run build -- --watch",
-    "e2e-test": "mocha --exit --timeout 10m \"./test/functional/**/*.e2e.spec.js\"",
+    "e2e-test": "mocha --exit --timeout 10m \"./test/e2e/**/*.e2e.spec.ts\"",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "lint:staged": "lint-staged",
     "prepare": "npm run rebuild",
     "rebuild": "npm run clean && npm run build",
-    "test": "mocha --exit --timeout 1m \"./test/unit/**/*.spec.js\""
+    "test": "mocha --exit --timeout 1m \"./test/unit/**/*.spec.ts\""
   },
   "dependencies": {
     "axios": "^1.12.0",
@@ -66,9 +65,9 @@
     "access": "public"
   },
   "typedoc": {
-    "entryPoint": "./lib/plugin.js"
+    "entryPoint": "./lib/plugin.ts"
   },
-  "main": "./build/index.js",
+  "main": "./build/lib/index.js",
   "devDependencies": {
     "@appium/eslint-config-appium-ts": "^2.0.0",
     "@appium/support": "^7.0.0",
@@ -77,6 +76,7 @@
     "@semantic-release/changelog": "^6.0.1",
     "@semantic-release/git": "^10.0.1",
     "@types/express": "^5.0.3",
+    "@types/mocha": "^10.0.0",
     "@types/node": "^25.0.9",
     "asyncbox": "^4.0.1",
     "chai": "^6.0.0",

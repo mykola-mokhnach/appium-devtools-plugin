@@ -1,18 +1,10 @@
 import { replaceDeep } from '../../lib/utils';
+import { expect } from 'chai';
 
 describe('utils', function () {
-  let chai;
-
-  before(async function () {
-    chai = await import('chai');
-    const chaiAsPromised = await import('chai-as-promised');
-
-    chai.should();
-    chai.use(chaiAsPromised.default);
-  });
 
   it('should perform deep replacement', function () {
-    const replaceMap = [[
+    const replaceMap: [string | RegExp, string][] = [[
         'ws://localhost:9222/devtools/page/DAB7FB6187B554E10B0BD18821265734',
         'wss://yolo:9222/session/devtools/page/DAB7FB6187B554E10B0BD18821265734',
       ], [
@@ -23,7 +15,7 @@ describe('utils', function () {
         'ws=yolo:9222/session/devtools/page/DAB7FB6187B554E10B0BD18821265734',
       ]
     ];
-    replaceDeep([{
+    expect(replaceDeep([{
       description: '',
       devtoolsFrontendUrl: '/devtools/inspector.html?ws=localhost:9222/devtools/page/DAB7FB6187B554E10B0BD18821265734',
       id: 'DAB7FB6187B554E10B0BD18821265734',
@@ -38,7 +30,7 @@ describe('utils', function () {
       'V8-Version': '7.2.233',
       'WebKit-Version': '537.36 (@cfede9db1d154de0468cb0538479f34c0755a0f4)',
       webSocketDebuggerUrl: 'ws://localhost:9222/devtools/browser/b0b8a4fb-bb17-4359-9533-a8d9f3908bd8'
-    }], replaceMap).should.eql([{
+    }], replaceMap)).to.eql([{
       description: '',
       devtoolsFrontendUrl: '/devtools/inspector.html?ws=yolo:9222/session/devtools/page/DAB7FB6187B554E10B0BD18821265734',
       id: 'DAB7FB6187B554E10B0BD18821265734',
