@@ -20,7 +20,6 @@ jobs:
           arch: x86
 
     env:
-      CI: true
       ANDROID_AVD: emulator
       APPIUM_TEST_SERVER_PORT: 4567
       APPIUM_TEST_SERVER_HOST: 127.0.0.1
