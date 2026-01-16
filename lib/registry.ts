@@ -1,21 +1,21 @@
+import type { DevtoolsPlugin } from './plugin';
 
-/** @type {Set<WeakRef<import('./plugin').DevtoolsPlugin>>} */
-export const PLUGIN_INSTANCES = new Set();
+export const PLUGIN_INSTANCES = new Set<WeakRef<DevtoolsPlugin>>();
 
 /**
- * @param {import('./plugin').DevtoolsPlugin} plugin
+ * @param plugin
  */
-export function registerPlugin(plugin) {
+export function registerPlugin(plugin: DevtoolsPlugin): void {
   PLUGIN_INSTANCES.add(new WeakRef(plugin));
 }
 
 /**
- * @param {string} uuid
- * @returns {import('./plugin').DevtoolsPlugin?}
+ * @param uuid
+ * @returns
  */
-export function findPlugin(uuid) {
-  let result = null;
-  const expiredRefs = [];
+export function findPlugin(uuid: string): DevtoolsPlugin | null {
+  let result: DevtoolsPlugin | null = null;
+  const expiredRefs: WeakRef<DevtoolsPlugin>[] = [];
   for (const instanceRef of PLUGIN_INSTANCES) {
     const instance = instanceRef.deref();
     if (!instance) {

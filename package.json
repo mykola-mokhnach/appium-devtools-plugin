@@ -22,12 +22,11 @@
   },
   "license": "Apache-2.0",
   "author": "Mykola Mokhnach",
-  "types": "./build/lib/plugin.d.ts",
+  "types": "./build/lib/index.d.ts",
   "files": [
     "build",
     "docs",
     "lib",
-    "index.js",
     "tsconfig.json",
     "!build/tsconfig.tsbuildinfo"
   ],
@@ -66,9 +65,9 @@
     "access": "public"
   },
   "typedoc": {
-    "entryPoint": "./lib/plugin.js"
+    "entryPoint": "./lib/plugin.ts"
   },
-  "main": "./build/index.js",
+  "main": "./build/lib/index.js",
   "devDependencies": {
     "@appium/eslint-config-appium-ts": "^2.0.0",
     "@appium/support": "^7.0.0",

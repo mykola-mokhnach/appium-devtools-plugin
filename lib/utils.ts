@@ -6,11 +6,10 @@ export const V4_BROADCAST_IP = '0.0.0.0';
 export const V6_BROADCAST_IP = '::';
 
 /**
- *
- * @param {string} socketName
- * @returns {string}
+ * @param socketName
+ * @returns
  */
-export function toSocketNameAlias(socketName) {
+export function toSocketNameAlias(socketName: string): string {
   const sha1sum = crypto.createHash('sha1');
   sha1sum.update(socketName);
   return sha1sum.digest('hex');
@@ -19,33 +18,30 @@ export function toSocketNameAlias(socketName) {
 /**
  * Fetches the list of matched network interfaces of the current host.
  *
- * @param {4|6|null} family Either 4 to include ipv4 addresses only,
+ * @param family Either 4 to include ipv4 addresses only,
  * 6 to include ipv6 addresses only, or null to include all of them
- * @returns {os.NetworkInterfaceInfo[]} The list of matched interfcaes
+ * @returns The list of matched interfaces
  */
-export function fetchInterfaces (family = null) {
-  let familyValue = null;
+export function fetchInterfaces(family: 4 | 6 | null = null): os.NetworkInterfaceInfo[] {
+  let familyValue: (4 | 6 | 'IPv4' | 'IPv6')[] | null = null;
   // 'IPv4' is in Node <= 17, from 18 it's a number 4 or 6
   if (family === 4) {
     familyValue = [4, 'IPv4'];
   } else if (family === 6) {
     familyValue = [6, 'IPv6'];
   }
-  // @ts-ignore The linter does not understand the below filter
   return _.flatMap(_.values(os.networkInterfaces()).filter(Boolean))
-    // @ts-ignore The linter does not understand the above filter
-    .filter(({family}) => !familyValue || familyValue && familyValue.includes(family));
+    .filter(({family}) => !familyValue || (familyValue && familyValue.includes(family as any)));
 }
 
 /**
- *
  * @template T
- * @param {T} obj
- * @param {[string|RegExp, string][]} replaceMap
- * @returns {T}
+ * @param obj
+ * @param replaceMap
+ * @returns
  */
-export function replaceDeep (obj, replaceMap) {
-  const doReplace = (val) => {
+export function replaceDeep<T>(obj: T, replaceMap: [string | RegExp, string][]): T {
+  const doReplace = (val: any): any => {
     if (!_.isString(val)) {
       return val;
     }
@@ -58,18 +54,16 @@ export function replaceDeep (obj, replaceMap) {
   };
 
   if (_.isPlainObject(obj)) {
-    // @ts-ignore This is expected
-    return _.reduce(obj, (result, value, key) => {
+    return _.reduce(obj, (result: any, value, key) => {
       result[doReplace(key)] = replaceDeep(value, replaceMap);
       return result;
     }, {});
   }
   if (_.isArray(obj)) {
-    // @ts-ignore This is expected
-    return obj.map((x) => replaceDeep(x, replaceMap));
+    return (obj as any[]).map((x) => replaceDeep(x, replaceMap)) as any;
   }
   if (_.isString(obj)) {
-    return doReplace(obj);
+    return doReplace(obj) as any;
   }
   return obj;
 }
