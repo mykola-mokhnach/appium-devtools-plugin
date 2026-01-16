@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v1.0.0...v1.0.1) (2026-01-16)
+
+### Bug Fixes
+
+* Tune functional tests config ([#56](https://github.com/mykola-mokhnach/appium-devtools-plugin/issues/56)) ([2264187](https://github.com/mykola-mokhnach/appium-devtools-plugin/commit/2264187d0ea05fb0ee59f432abbba5fa5af16d00))
+
 ## [1.0.0](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v0.1.1...v1.0.0) (2026-01-16)
 
 ### ⚠ BREAKING CHANGES
