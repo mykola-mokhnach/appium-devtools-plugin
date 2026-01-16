@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "outDir": "build",
-    "checkJs": true
+    "checkJs": true,
+    "types": ["node", "mocha"]
   },
   "extends": "@appium/tsconfig/tsconfig.plugin.json",
-  "include": ["lib"]
+  "include": ["lib", "test"]
 }

@@ -1,5 +1,6 @@
 import {remote as wdio} from 'webdriverio';
 import { waitForCondition } from 'asyncbox';
+import type { Browser } from 'webdriverio';
 
 const TEST_CAPS = {
   platformName: 'Android',
@@ -13,17 +14,7 @@ const WDIO_OPTS = {
 };
 
 describe('DevtoolsPlugin', function () {
-  /** @type {import('webdriverio').Browser} */
-  let driver;
-  let chai;
-
-  before(async function () {
-    chai = await import('chai');
-    const chaiAsPromised = await import('chai-as-promised');
-
-    chai.should();
-    chai.use(chaiAsPromised.default);
-  });
+  let driver: Browser;
 
   beforeEach(async function () {
     driver = await wdio(WDIO_OPTS);
@@ -46,7 +37,7 @@ describe('DevtoolsPlugin', function () {
       uri: 'https://google.com',
     }]);
     await waitForCondition(async () => {
-      const {targets} = await driver.executeScript('devtools: listTargets', []);
+      const {targets} = await driver.executeScript('devtools: listTargets', []) as {targets: any[]};
       return targets.length;
     }, {
       waitMs: 5000,

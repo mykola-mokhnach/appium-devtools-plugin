@@ -1,4 +1,4 @@
-import type { BaseDriver } from 'appium/driver';
+import type { AppiumServer } from '@appium/types';
 
 export interface ProxyInfo {
   name: string;
@@ -36,5 +36,5 @@ export interface DevtoolsTargetsInfo {
 
 export interface RequiredDriverProperties {
   adb: any;
-  server: import('@appium/types').AppiumServer;
+  server: AppiumServer;
 }

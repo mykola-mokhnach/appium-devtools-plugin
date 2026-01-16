@@ -2,6 +2,9 @@ name: Functional Tests
 
 on: [pull_request]
 
+env:
+  CI: true
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -24,12 +27,12 @@ jobs:
       _FORCE_LOGS: 1
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v3
+    - uses: actions/checkout@v6
+    - uses: actions/setup-node@v6
       with:
         node-version: lts/*
         check-latest: true
-    - uses: actions/setup-java@v3
+    - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '17'

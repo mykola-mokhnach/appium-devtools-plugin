@@ -6,33 +6,25 @@ import * as proxyMethods from './mixins/proxy';
 import * as cmdMethods from './mixins/cmds';
 import { CDP_METHODS_ROOT } from './constants';
 import { registerPlugin, findPlugin } from './registry';
-import logger from './logger';
+import { log as logger } from './logger';
 import type { BaseDriver } from 'appium/driver';
+import type { ExecuteMethodMap } from '@appium/types';
 
 type Driver = BaseDriver<any, any, any, any, any, any>;
 import type { Express, Request, Response } from 'express';
-import type { ProxyInfo, ProxiedSession } from './types';
+import type { ProxiedSession } from './types';
 
-export default class DevtoolsPlugin extends BasePlugin {
+export class DevtoolsPlugin extends BasePlugin {
+  private driverRef: WeakRef<Driver> | null = null;
+  readonly proxiedSessions: Record<string, ProxiedSession> = {};
+  readonly uuid: string = util.uuidV4();
 
-  driverRef: WeakRef<Driver> | null = null;
-
-  proxiedSessions: Record<string, ProxiedSession> = {};
-
-  uuid: string;
-
-  /**
-   * @param pluginName
-   */
   constructor(pluginName: string) {
     super(pluginName);
-    this.driverRef = null;
-    this.proxiedSessions = {};
-    this.uuid = util.uuidV4();
     registerPlugin(this);
   }
 
-  static executeMethodMap = {
+  static readonly executeMethodMap: ExecuteMethodMap<DevtoolsPlugin> = {
     'devtools: listTargets': {
       command: 'listDevtoolsTargets',
     },
@@ -51,6 +43,13 @@ export default class DevtoolsPlugin extends BasePlugin {
     }
   } as const;
 
+  /**
+   * Registers HTTP endpoints for Chrome DevTools Protocol access.
+   * Sets up routes for version info, target listing, protocol schema, tab management,
+   * and the DevTools inspector interface.
+   *
+   * @param expressApp - The Express application instance to register routes on
+   */
   static async updateServer(expressApp: Express): Promise<void> {
     const buildHanlder = (
       methodName: string,
@@ -66,7 +65,6 @@ export default class DevtoolsPlugin extends BasePlugin {
         return;
       }
       try {
-        // eslint-disable-next-line import/namespace
         const result = await (cmdMethods as any)[methodName].bind(plugin)(req);
         res.status(200).json(result);
       } catch (e: any) {
@@ -93,16 +91,25 @@ export default class DevtoolsPlugin extends BasePlugin {
     );
   }
 
-  /** @returns */
+  /**
+   * Gets the current driver instance, if available.
+   *
+   * @returns The driver instance or null if not available
+   */
   get driver(): Driver | null {
     return this.driverRef?.deref() ?? null;
   }
 
   /**
-   * @param next
-   * @param driver
-   * @param cmdName
-   * @param cmdArgs
+   * Handles Appium commands, intercepting 'execute' and 'deleteSession' commands.
+   * Initializes the driver reference when a session is created with an Android driver,
+   * and cleans up proxied sessions when a session is deleted.
+   *
+   * @param next - The next handler in the plugin chain
+   * @param driver - The Appium driver instance
+   * @param cmdName - The name of the command being executed
+   * @param cmdArgs - Additional arguments for the command
+   * @returns The result of the command execution
    */
   async handle(next: () => Promise<any>, driver: Driver, cmdName: string, ...cmdArgs: any[]): Promise<any> {
     if (!this.driverRef && 'adb' in driver && driver.adb) {
@@ -133,5 +140,3 @@ export default class DevtoolsPlugin extends BasePlugin {
   proxyDevtoolsTarget = proxyMethods.proxyDevtoolsTarget;
   unproxyDevtoolsTarget = proxyMethods.unproxyDevtoolsTarget;
 }
-
-export {DevtoolsPlugin};

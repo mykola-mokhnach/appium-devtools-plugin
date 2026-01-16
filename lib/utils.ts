@@ -6,8 +6,10 @@ export const V4_BROADCAST_IP = '0.0.0.0';
 export const V6_BROADCAST_IP = '::';
 
 /**
- * @param socketName
- * @returns
+ * Converts a socket name to a unique alias by computing its SHA1 hash.
+ *
+ * @param socketName - The socket name to convert (e.g., '@webview_devtools_remote_12345')
+ * @returns A hexadecimal SHA1 hash string representing the socket alias
  */
 export function toSocketNameAlias(socketName: string): string {
   const sha1sum = crypto.createHash('sha1');
@@ -35,10 +37,13 @@ export function fetchInterfaces(family: 4 | 6 | null = null): os.NetworkInterfac
 }
 
 /**
+ * Recursively replaces string values in an object, array, or string using a map of patterns to replacements.
+ * The replacement is applied to both keys and values, and works with nested structures.
+ *
  * @template T
- * @param obj
- * @param replaceMap
- * @returns
+ * @param obj - The object, array, or string to perform replacements on
+ * @param replaceMap - An array of tuples where each tuple contains a pattern (string or RegExp) and its replacement string
+ * @returns A new object/array/string with all matching patterns replaced
  */
 export function replaceDeep<T>(obj: T, replaceMap: [string | RegExp, string][]): T {
   const doReplace = (val: any): any => {

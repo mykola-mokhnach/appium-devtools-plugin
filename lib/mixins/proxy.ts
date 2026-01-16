@@ -298,8 +298,9 @@ export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Prom
   }
 
   this.log.debug(`Starting the proxy for the Devtools target '${name}'`);
-  let localPort: number = port!;
-  if (localPort) {
+  let localPort: number;
+  if (port) {
+    localPort = port;
     if (await checkPortStatus(localPort) !== 'closed') {
       throw new Error(
         `The selected port number #${localPort} to forward the Devtools socket '${name}' is busy. ` +
