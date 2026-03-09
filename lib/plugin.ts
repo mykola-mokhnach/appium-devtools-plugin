@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import { BasePlugin } from 'appium/plugin';
 import { util } from 'appium/support';
-import B from 'bluebird';
 import * as proxyMethods from './mixins/proxy';
 import * as cmdMethods from './mixins/cmds';
 import { CDP_METHODS_ROOT } from './constants';
@@ -123,7 +122,7 @@ export class DevtoolsPlugin extends BasePlugin {
       case 'deleteSession':
         if (!_.isEmpty(this.proxiedSessions)) {
           const names = _.values(this.proxiedSessions).map(({name}) => name);
-          await B.all(
+          await Promise.all(
             names.map((name) => this.unproxyDevtoolsTarget(next, driver, name))
           );
         }

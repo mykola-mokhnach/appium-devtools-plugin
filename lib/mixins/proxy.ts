@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import {util} from 'appium/support';
 import {findAPortNotInUse, checkPortStatus} from 'portscanner';
-import B from 'bluebird';
 import {
   toSocketNameAlias, fetchInterfaces,
   V4_BROADCAST_IP, V6_BROADCAST_IP
@@ -99,7 +98,7 @@ async function getCandidateSocketNames(this: DevtoolsPlugin): Promise<string[]> 
  */
 async function collectSingleDetails(this: DevtoolsPlugin, socketName: string, localPort: number): Promise<WebviewProps> {
   this.log.debug(`Collecting CDP data of '${socketName}'`);
-  const [info, pages] = await B.all([cdpInfo(localPort), cdpList(localPort)]);
+  const [info, pages] = await Promise.all([cdpInfo(localPort), cdpList(localPort)]);
   this.log.info(`Collected CDP details of '${socketName}'`);
   return {info, pages};
 }
