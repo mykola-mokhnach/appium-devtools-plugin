@@ -1,5 +1,4 @@
 import {errors} from 'appium/driver';
-import _ from 'lodash';
 import type { Request } from 'express';
 import {
   cdpInfo, cdpList, cdpProtocol,
@@ -65,7 +64,8 @@ export async function cmdProtocol(this: DevtoolsPlugin, req: Request): Promise<R
  */
 export async function cmdOpenTab(this: DevtoolsPlugin, req: Request): Promise<Record<string, any>> {
   const {port, rewrites} = checkAlias.bind(this)(req.params.alias);
-  return replaceDeep(await cdpOpenTab(port, _.keys(req.query)[0] || null), rewrites);
+  const firstQueryKey = Object.keys(req.query)[0] ?? null;
+  return replaceDeep(await cdpOpenTab(port, firstQueryKey), rewrites);
 }
 
 /**
