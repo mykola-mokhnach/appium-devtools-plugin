@@ -12,7 +12,7 @@ import { cdpInfo, cdpList } from './atoms';
 import type { DevtoolsPlugin } from '../plugin';
 import type { BaseDriver } from 'appium/driver';
 import type { RequiredDriverProperties, WebviewProps, DevtoolsTargetsInfo, ProxyInfo } from '../types';
-import type { IncomingMessage } from 'http';
+import type { IncomingMessage } from 'node:http';
 
 type Driver = BaseDriver<any, any, any, any, any, any>;
 
