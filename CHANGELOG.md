@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v1.0.1...v1.0.2) (2026-03-09)
+
+### Miscellaneous Chores
+
+* Drop bluebird and lodash usages ([#63](https://github.com/mykola-mokhnach/appium-devtools-plugin/issues/63)) ([ff93766](https://github.com/mykola-mokhnach/appium-devtools-plugin/commit/ff93766972f2e184358c8f9f41639b4bf652b695))
+
 ## [1.0.1](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v1.0.0...v1.0.1) (2026-01-16)
 
 ### Bug Fixes
