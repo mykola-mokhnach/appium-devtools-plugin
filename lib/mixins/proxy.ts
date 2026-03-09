@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import {util} from 'appium/support';
 import {findAPortNotInUse, checkPortStatus} from 'portscanner';
 import {
@@ -71,9 +70,9 @@ async function getCandidateSocketNames(this: DevtoolsPlugin): Promise<string[]> 
 
     names.push(sockPath);
   }
-  if (_.isEmpty(names)) {
+  if (names.length === 0) {
     this.log.debug('Found no active devtools sockets');
-    if (!_.isEmpty(allMatches)) {
+    if (allMatches.length > 0) {
       this.log.debug(`Other sockets are: ${JSON.stringify(allMatches, null, 2)}`);
     }
   } else {
@@ -83,7 +82,7 @@ async function getCandidateSocketNames(this: DevtoolsPlugin): Promise<string[]> 
     );
   }
   // sometimes the webview process shows up multiple times per app
-  return _.uniq(names);
+  return Array.from(new Set(names));
 }
 
 /**
@@ -114,7 +113,7 @@ async function collectSingleDetails(this: DevtoolsPlugin, socketName: string, lo
  */
 async function collectMultipleDetails(this: DevtoolsPlugin, socketNames: string[]): Promise<Record<string, WebviewProps>> {
   const {adb} = requireDriverProperties(this.driver);
-  if (_.isEmpty(socketNames)) {
+  if (socketNames.length === 0) {
     return {};
   }
 
@@ -154,7 +153,7 @@ async function collectMultipleDetails(this: DevtoolsPlugin, socketNames: string[
       }
     }
   }
-  this.log.info(`Collected CDP details of ${util.pluralize('webview', _.size(details), true)}`);
+  this.log.info(`Collected CDP details of ${util.pluralize('webview', Object.keys(details).length, true)}`);
   return details;
 }
 
@@ -166,7 +165,9 @@ async function collectMultipleDetails(this: DevtoolsPlugin, socketNames: string[
 function toProxyInfo(this: DevtoolsPlugin, alias: string): ProxyInfo {
   return {
     uuid: this.uuid,
-    ..._.pick(this.proxiedSessions[alias], 'alias', 'name', 'root'),
+    alias: this.proxiedSessions[alias].alias,
+    name: this.proxiedSessions[alias].name,
+    root: this.proxiedSessions[alias].root,
   };
 }
 
@@ -180,8 +181,9 @@ function toProxyInfo(this: DevtoolsPlugin, alias: string): ProxyInfo {
 export async function listDevtoolsTargets(this: DevtoolsPlugin): Promise<DevtoolsTargetsInfo> {
   const socketNames = await getCandidateSocketNames.bind(this)();
   const webviewsMapping = await collectMultipleDetails.bind(this)(socketNames);
-  const targets = _.toPairs(webviewsMapping)
-    .map(([name, {pages, info}]) => {
+  const targets = Object.entries(webviewsMapping)
+    .map(([name, props]) => {
+      const {pages, info} = props as WebviewProps;
       const alias = toSocketNameAlias(name);
       const isProxied = alias in this.proxiedSessions;
       return {

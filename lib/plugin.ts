@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { BasePlugin } from 'appium/plugin';
 import { util } from 'appium/support';
 import * as proxyMethods from './mixins/proxy';
@@ -120,8 +119,8 @@ export class DevtoolsPlugin extends BasePlugin {
       case 'execute':
         return await this.executeMethod(next, driver, cmdArgs[0], cmdArgs[1]);
       case 'deleteSession':
-        if (!_.isEmpty(this.proxiedSessions)) {
-          const names = _.values(this.proxiedSessions).map(({name}) => name);
+        if (Object.keys(this.proxiedSessions).length > 0) {
+          const names = Object.values(this.proxiedSessions).map(({name}) => name);
           await Promise.all(
             names.map((name) => this.unproxyDevtoolsTarget(next, driver, name))
           );

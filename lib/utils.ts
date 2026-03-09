@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import crypto from 'node:crypto';
 import os from 'node:os';
 
@@ -32,8 +31,12 @@ export function fetchInterfaces(family: 4 | 6 | null = null): os.NetworkInterfac
   } else if (family === 6) {
     familyValue = [6, 'IPv6'];
   }
-  return _.flatMap(_.values(os.networkInterfaces()).filter(Boolean))
-    .filter(({family}) => !familyValue || (familyValue && familyValue.includes(family as any)));
+  const allInterfaces = Object.values(os.networkInterfaces()).filter(
+    (ifaceList): ifaceList is os.NetworkInterfaceInfo[] => Array.isArray(ifaceList)
+  );
+  return allInterfaces
+    .flat()
+    .filter(({family}) => !familyValue || familyValue.includes(family as any));
 }
 
 /**
@@ -47,27 +50,30 @@ export function fetchInterfaces(family: 4 | 6 | null = null): os.NetworkInterfac
  */
 export function replaceDeep<T>(obj: T, replaceMap: [string | RegExp, string][]): T {
   const doReplace = (val: any): any => {
-    if (!_.isString(val)) {
+    if (typeof val !== 'string') {
       return val;
     }
 
     let result = val;
-    for (const [r1, r2] of replaceMap) {
-      result = _.isString(r1) ? result.replaceAll(r1, r2) : result.replace(r1, r2);
+    for (const [pattern, replacement] of replaceMap) {
+      result =
+        typeof pattern === 'string'
+          ? result.replaceAll(pattern, replacement)
+          : result.replace(pattern, replacement);
     }
     return result;
   };
 
-  if (_.isPlainObject(obj)) {
-    return _.reduce(obj, (result: any, value, key) => {
+  if (obj !== null && typeof obj === 'object' && !Array.isArray(obj)) {
+    return Object.entries(obj as any).reduce((result: any, [key, value]) => {
       result[doReplace(key)] = replaceDeep(value, replaceMap);
       return result;
-    }, {});
+    }, {}) as any;
   }
-  if (_.isArray(obj)) {
+  if (Array.isArray(obj)) {
     return (obj as any[]).map((x) => replaceDeep(x, replaceMap)) as any;
   }
-  if (_.isString(obj)) {
+  if (typeof obj === 'string') {
     return doReplace(obj) as any;
   }
   return obj;
