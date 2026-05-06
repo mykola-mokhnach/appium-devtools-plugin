@@ -6,7 +6,7 @@ describe('DevtoolsPlugin', function () {
   const driverWithAdb = {
     adb: {},
   };
-  const {adb: _ignored, ...driverWoAdb} = driverWithAdb;
+  const driverWoAdb = {};
 
   beforeEach(function () {
     plugin = new DevtoolsPlugin('devtools');

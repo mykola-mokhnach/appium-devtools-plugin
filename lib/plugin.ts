@@ -13,15 +13,6 @@ import type { Express, Request, Response } from 'express';
 import type { ProxiedSession } from './types';
 
 export class DevtoolsPlugin extends BasePlugin {
-  private driverRef: WeakRef<Driver> | null = null;
-  readonly proxiedSessions: Record<string, ProxiedSession> = {};
-  readonly uuid: string = util.uuidV4();
-
-  constructor(pluginName: string) {
-    super(pluginName);
-    registerPlugin(this);
-  }
-
   static readonly executeMethodMap: ExecuteMethodMap<DevtoolsPlugin> = {
     'devtools: listTargets': {
       command: 'listDevtoolsTargets',
@@ -40,6 +31,27 @@ export class DevtoolsPlugin extends BasePlugin {
       },
     }
   } as const;
+
+  readonly proxiedSessions: Record<string, ProxiedSession> = {};
+  readonly uuid: string = util.uuidV4();
+  listDevtoolsTargets = proxyMethods.listDevtoolsTargets;
+  proxyDevtoolsTarget = proxyMethods.proxyDevtoolsTarget;
+  unproxyDevtoolsTarget = proxyMethods.unproxyDevtoolsTarget;
+  private driverRef: WeakRef<Driver> | null = null;
+
+  constructor(pluginName: string) {
+    super(pluginName);
+    registerPlugin(this);
+  }
+
+  /**
+   * Gets the current driver instance, if available.
+   *
+   * @returns The driver instance or null if not available
+   */
+  get driver(): Driver | null {
+    return this.driverRef?.deref() ?? null;
+  }
 
   /**
    * Registers HTTP endpoints for Chrome DevTools Protocol access.
@@ -90,15 +102,6 @@ export class DevtoolsPlugin extends BasePlugin {
   }
 
   /**
-   * Gets the current driver instance, if available.
-   *
-   * @returns The driver instance or null if not available
-   */
-  get driver(): Driver | null {
-    return this.driverRef?.deref() ?? null;
-  }
-
-  /**
    * Handles Appium commands, intercepting 'execute' and 'deleteSession' commands.
    * Initializes the driver reference when a session is created with an Android driver,
    * and cleans up proxied sessions when a session is deleted.
@@ -133,8 +136,4 @@ export class DevtoolsPlugin extends BasePlugin {
 
     return await next();
   }
-
-  listDevtoolsTargets = proxyMethods.listDevtoolsTargets;
-  proxyDevtoolsTarget = proxyMethods.proxyDevtoolsTarget;
-  unproxyDevtoolsTarget = proxyMethods.unproxyDevtoolsTarget;
 }
