@@ -1,13 +1,17 @@
 import {errors} from 'appium/driver';
-import type { Request } from 'express';
+import type {Request} from 'express';
 import {
-  cdpInfo, cdpList, cdpProtocol,
-  cdpOpenTab, cdpActivateTab, cdpCloseTab,
+  cdpInfo,
+  cdpList,
+  cdpProtocol,
+  cdpOpenTab,
+  cdpActivateTab,
+  cdpCloseTab,
   cdpInspector,
 } from './atoms';
-import { replaceDeep } from '../utils';
-import type { DevtoolsPlugin } from '../plugin';
-import type { ProxiedSession } from '../types';
+import {replaceDeep} from '../utils';
+import type {DevtoolsPlugin} from '../plugin';
+import type {ProxiedSession} from '../types';
 
 /**
  * Returns version information for a proxied DevTools target with URL rewrites applied.
@@ -17,7 +21,7 @@ import type { ProxiedSession } from '../types';
  * @returns Version information with rewritten URLs
  */
 export async function cmdVersion(this: DevtoolsPlugin, req: Request): Promise<Record<string, any>> {
-  const {port, rewrites} = checkAlias.bind(this)(req.params.alias);
+  const {port, rewrites} = checkAlias.bind(this)(toParamValue(req.params.alias));
   return replaceDeep(await cdpInfo(port), rewrites);
 }
 
@@ -29,7 +33,7 @@ export async function cmdVersion(this: DevtoolsPlugin, req: Request): Promise<Re
  * @returns List of target information with rewritten URLs
  */
 export async function cmdList(this: DevtoolsPlugin, req: Request): Promise<Record<string, any>[]> {
-  const {port, rewrites} = checkAlias.bind(this)(req.params.alias);
+  const {port, rewrites} = checkAlias.bind(this)(toParamValue(req.params.alias));
   return replaceDeep(await cdpList(port), rewrites);
 }
 
@@ -40,8 +44,11 @@ export async function cmdList(this: DevtoolsPlugin, req: Request): Promise<Recor
  * @param req - Express request object containing the target alias in params
  * @returns Protocol schema with rewritten URLs
  */
-export async function cmdProtocol(this: DevtoolsPlugin, req: Request): Promise<Record<string, any>> {
-  const {port, rewrites} = checkAlias.bind(this)(req.params.alias);
+export async function cmdProtocol(
+  this: DevtoolsPlugin,
+  req: Request,
+): Promise<Record<string, any>> {
+  const {port, rewrites} = checkAlias.bind(this)(toParamValue(req.params.alias));
   return replaceDeep(await cdpProtocol(port), rewrites);
 }
 
@@ -53,7 +60,7 @@ export async function cmdProtocol(this: DevtoolsPlugin, req: Request): Promise<R
  * @returns Information about the newly created tab with rewritten URLs
  */
 export async function cmdOpenTab(this: DevtoolsPlugin, req: Request): Promise<Record<string, any>> {
-  const {port, rewrites} = checkAlias.bind(this)(req.params.alias);
+  const {port, rewrites} = checkAlias.bind(this)(toParamValue(req.params.alias));
   const firstQueryKey = Object.keys(req.query)[0] ?? null;
   return replaceDeep(await cdpOpenTab(port, firstQueryKey), rewrites);
 }
@@ -65,9 +72,14 @@ export async function cmdOpenTab(this: DevtoolsPlugin, req: Request): Promise<Re
  * @param req - Express request object containing the target alias and targetId in params
  * @returns Result of the activation operation with rewritten URLs
  */
-export async function cmdActivateTab(this: DevtoolsPlugin, req: Request): Promise<Record<string, any>> {
-  const {port, rewrites} = checkAlias.bind(this)(req.params.alias);
-  const targetId = Array.isArray(req.params.targetId) ? req.params.targetId[0] : req.params.targetId;
+export async function cmdActivateTab(
+  this: DevtoolsPlugin,
+  req: Request,
+): Promise<Record<string, any>> {
+  const {port, rewrites} = checkAlias.bind(this)(toParamValue(req.params.alias));
+  const targetId = Array.isArray(req.params.targetId)
+    ? req.params.targetId[0]
+    : req.params.targetId;
   return replaceDeep(await cdpActivateTab(port, targetId), rewrites);
 }
 
@@ -78,9 +90,14 @@ export async function cmdActivateTab(this: DevtoolsPlugin, req: Request): Promis
  * @param req - Express request object containing the target alias and targetId in params
  * @returns Result of the close operation with rewritten URLs
  */
-export async function cmdCloseTab(this: DevtoolsPlugin, req: Request): Promise<Record<string, any>> {
-  const {port, rewrites} = checkAlias.bind(this)(req.params.alias);
-  const targetId = Array.isArray(req.params.targetId) ? req.params.targetId[0] : req.params.targetId;
+export async function cmdCloseTab(
+  this: DevtoolsPlugin,
+  req: Request,
+): Promise<Record<string, any>> {
+  const {port, rewrites} = checkAlias.bind(this)(toParamValue(req.params.alias));
+  const targetId = Array.isArray(req.params.targetId)
+    ? req.params.targetId[0]
+    : req.params.targetId;
   return replaceDeep(await cdpCloseTab(port, targetId), rewrites);
 }
 
@@ -91,8 +108,11 @@ export async function cmdCloseTab(this: DevtoolsPlugin, req: Request): Promise<R
  * @param req - Express request object containing the target alias in params
  * @returns The HTML content of the DevTools inspector page with rewritten URLs
  */
-export async function cmdInspector(this: DevtoolsPlugin, req: Request): Promise<Record<string, any>> {
-  const {port, rewrites} = checkAlias.bind(this)(req.params.alias);
+export async function cmdInspector(
+  this: DevtoolsPlugin,
+  req: Request,
+): Promise<Record<string, any>> {
+  const {port, rewrites} = checkAlias.bind(this)(toParamValue(req.params.alias));
   return replaceDeep(await cdpInspector(port), rewrites);
 }
 
@@ -100,8 +120,12 @@ function checkAlias(this: DevtoolsPlugin, alias: string): ProxiedSession {
   if (!(alias in this.proxiedSessions)) {
     throw new errors.UnknownCommandError(
       `The target with alias '${alias}' is not being proxied. ` +
-      `Make sure to invoke 'proxyTarget' beforehand`
+        `Make sure to invoke 'proxyTarget' beforehand`,
     );
   }
   return this.proxiedSessions[alias];
+}
+
+function toParamValue(param: string | string[]): string {
+  return Array.isArray(param) ? param[0] : param;
 }

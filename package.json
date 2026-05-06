@@ -30,11 +30,17 @@
     "tsconfig.json",
     "!build/tsconfig.tsbuildinfo"
   ],
+  "prettier": {
+    "bracketSpacing": false,
+    "printWidth": 100,
+    "singleQuote": true
+  },
   "scripts": {
     "build": "tsc -b",
     "clean": "npm run build -- --clean",
     "dev": "npm run build -- --watch",
     "e2e-test": "mocha --exit --timeout 10m \"./test/e2e/**/*.e2e.spec.ts\"",
+    "format": "prettier --write \"**/*.{js,ts,json}\"",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "lint:staged": "lint-staged",
@@ -73,9 +79,11 @@
     "@appium/types": "^1.0.0",
     "@semantic-release/changelog": "^6.0.1",
     "@semantic-release/git": "^10.0.1",
+    "@types/chai": "^5.2.3",
     "@types/express": "^5.0.3",
     "@types/mocha": "^10.0.0",
     "@types/node": "^25.0.9",
+    "@types/portscanner": "^2.1.4",
     "asyncbox": "^6.1.0",
     "chai": "^6.0.0",
     "chai-as-promised": "^8.0.0",

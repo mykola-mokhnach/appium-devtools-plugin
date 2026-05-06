@@ -1,5 +1,5 @@
-import { DevtoolsPlugin } from '../../lib/plugin';
-import { expect } from 'chai';
+import {DevtoolsPlugin} from '../../lib/plugin';
+import {expect} from 'chai';
 
 describe('DevtoolsPlugin', function () {
   let plugin: DevtoolsPlugin;

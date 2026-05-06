@@ -1,4 +1,4 @@
-import { DevtoolsPlugin } from './plugin';
+import {DevtoolsPlugin} from './plugin';
 
-export { DevtoolsPlugin };
+export {DevtoolsPlugin};
 export default DevtoolsPlugin;

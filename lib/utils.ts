@@ -32,7 +32,7 @@ export function fetchInterfaces(family: 4 | 6 | null = null): os.NetworkInterfac
     familyValue = [6, 'IPv6'];
   }
   const allInterfaces = Object.values(os.networkInterfaces()).filter(
-    (ifaceList): ifaceList is os.NetworkInterfaceInfo[] => Array.isArray(ifaceList)
+    (ifaceList): ifaceList is os.NetworkInterfaceInfo[] => Array.isArray(ifaceList),
   );
   return allInterfaces
     .flat()

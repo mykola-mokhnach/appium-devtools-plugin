@@ -1,4 +1,4 @@
-import type { AppiumServer } from '@appium/types';
+import type {AppiumServer} from '@appium/types';
 
 export interface ProxyInfo {
   name: string;
