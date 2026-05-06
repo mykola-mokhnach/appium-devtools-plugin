@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v1.0.2...v1.0.3) (2026-05-06)
+
+### Bug Fixes
+
+* linter ([#67](https://github.com/mykola-mokhnach/appium-devtools-plugin/issues/67)) ([c1e815f](https://github.com/mykola-mokhnach/appium-devtools-plugin/commit/c1e815f67aae13bf552a48dc4533ee5d5597553c))
+
 ## [1.0.2](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v1.0.1...v1.0.2) (2026-03-09)
 
 ### Miscellaneous Chores
