@@ -9,16 +9,6 @@ import { replaceDeep } from '../utils';
 import type { DevtoolsPlugin } from '../plugin';
 import type { ProxiedSession } from '../types';
 
-function checkAlias(this: DevtoolsPlugin, alias: string): ProxiedSession {
-  if (!(alias in this.proxiedSessions)) {
-    throw new errors.UnknownCommandError(
-      `The target with alias '${alias}' is not being proxied. ` +
-      `Make sure to invoke 'proxyTarget' beforehand`
-    );
-  }
-  return this.proxiedSessions[alias];
-}
-
 /**
  * Returns version information for a proxied DevTools target with URL rewrites applied.
  *
@@ -104,4 +94,14 @@ export async function cmdCloseTab(this: DevtoolsPlugin, req: Request): Promise<R
 export async function cmdInspector(this: DevtoolsPlugin, req: Request): Promise<Record<string, any>> {
   const {port, rewrites} = checkAlias.bind(this)(req.params.alias);
   return replaceDeep(await cdpInspector(port), rewrites);
+}
+
+function checkAlias(this: DevtoolsPlugin, alias: string): ProxiedSession {
+  if (!(alias in this.proxiedSessions)) {
+    throw new errors.UnknownCommandError(
+      `The target with alias '${alias}' is not being proxied. ` +
+      `Make sure to invoke 'proxyTarget' beforehand`
+    );
+  }
+  return this.proxiedSessions[alias];
 }
