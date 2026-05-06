@@ -23,6 +23,227 @@ const WS_SERVER_ERROR = 1011;
 const WS_SERVER_POLICY_VIOLATION = 1008;
 const WS_ENTITY_ID_PATTERN = /\/devtools\/(browser|page)\/([a-fA-F0-9-]+)/;
 
+/**
+ * Lists all available Chrome DevTools Protocol targets on the connected Android device.
+ * This includes both proxied and non-proxied targets with their associated information.
+ *
+ * @this {DevtoolsPlugin}
+ * @returns Information about all available DevTools targets, including their proxy status
+ */
+export async function listDevtoolsTargets(this: DevtoolsPlugin): Promise<DevtoolsTargetsInfo> {
+  const socketNames = await getCandidateSocketNames.bind(this)();
+  const webviewsMapping = await collectMultipleDetails.bind(this)(socketNames);
+  const targets = Object.entries(webviewsMapping)
+    .map(([name, props]) => {
+      const {pages, info} = props as WebviewProps;
+      const alias = toSocketNameAlias(name);
+      const isProxied = alias in this.proxiedSessions;
+      return {
+        name,
+        pages,
+        info,
+        isProxied,
+        proxyInfo: isProxied ? toProxyInfo.bind(this)(alias) : null,
+      };
+    });
+  return {targets};
+}
+
+/**
+ * Proxies a Chrome DevTools Protocol target, making it accessible through the Appium server.
+ * This sets up port forwarding, WebSocket handlers, and URL rewriting to enable remote access
+ * to the DevTools interface.
+ *
+ * @this {DevtoolsPlugin}
+ * @param next - The next handler in the plugin chain
+ * @param driver - The Appium driver instance
+ * @param name - The socket name of the target to proxy (e.g., '@webview_devtools_remote_12345')
+ * @param port - Optional local port number to use for forwarding. If not provided, an available port will be selected automatically
+ * @returns Proxy information including UUID, alias, name, and root URL
+ * @throws {Error} If the target is already being proxied, port is busy, or target cannot be proxied
+ */
+export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Promise<any>, driver: Driver, name: string, port?: number): Promise<ProxyInfo> {
+  const {adb, server} = requireDriverProperties(this.driver);
+
+  const alias = toSocketNameAlias(name);
+  if (alias in this.proxiedSessions) {
+    throw new Error(`The target '${name}' is already being proxied`);
+  }
+
+  this.log.debug(`Starting the proxy for the Devtools target '${name}'`);
+  let localPort: number;
+  if (port) {
+    localPort = port;
+    if (await checkPortStatus(localPort) !== 'closed') {
+      throw new Error(
+        `The selected port number #${localPort} to forward the Devtools socket '${name}' is busy. ` +
+        `Try to provide another free port number instead.`
+      );
+    }
+  } else {
+    const [startPort, endPort] = DEVTOOLS_BIND_PORTS_RANGE;
+    try {
+      localPort = await findAPortNotInUse(startPort, endPort);
+    } catch {
+      throw new Error(
+        `Cannot find any free port in range ${startPort}..${endPort} ` +
+        `to forward the Devtools socket '${name}'. Try to provide a custom port ` +
+        `number instead.`
+      );
+    }
+  }
+  const remotePort = name.replace(/^@/, '');
+  const removePortForward = async () => {
+    try {
+      await adb.removePortForward(localPort);
+    } catch (e: any) {
+      this.log.debug(`Cannot remove the port forward. Original error: ${e.message}`);
+    }
+  };
+  try {
+    await adb.forwardAbstractPort(localPort, remotePort);
+  } catch (e: any) {
+    throw new Error(`Could not create a port forward to fetch the details of '${name}' socket: ${e.message}`, {
+      cause: e,
+    });
+  }
+
+  let details: WebviewProps;
+  try {
+    details = await collectSingleDetails.bind(this)(name, localPort);
+  } catch (e: any) {
+    await removePortForward();
+    throw new Error(`The target '${name}' cannot be proxied. Original error: ${e.message}`, {
+      cause: e,
+    });
+  }
+  const browserDebuggerUrl = details.info[DEBUGGER_URL_KEY];
+  if (!browserDebuggerUrl) {
+    this.log.debug(JSON.stringify(details.info));
+    await removePortForward();
+    throw new Error(
+      `The target '${name}' cannot be proxied. ` +
+      `The response to /json/version did not contain the required '${DEBUGGER_URL_KEY}' key`
+    );
+  }
+
+  const rewrites: [string | RegExp, string][] = [];
+
+  const serverProtocol = 'secure' in server && server.secure ? 'wss:' : 'ws:';
+  const addressInfo = server.address();
+  if (!addressInfo || typeof addressInfo === 'string') {
+    await removePortForward();
+    throw new Error('Server address is not available');
+  }
+  const {address: rawServerHost, port: serverPort} = addressInfo;
+  const serverHost = toServerHost(rawServerHost);
+  const forwardTo =
+    `${serverProtocol}//${serverHost}:${serverPort}/${CDP_METHODS_ROOT}/${this.uuid}/${alias}`;
+  let wdUrl: URL;
+  try {
+    wdUrl = new URL(browserDebuggerUrl);
+  } catch {
+    await removePortForward();
+    throw new Error(
+      `The target '${name}' cannot be proxied. ` +
+      `The '${DEBUGGER_URL_KEY}' key value '${browserDebuggerUrl}' in the /json/version response is not a valid URL`
+    );
+  }
+  const forwardFrom = `${wdUrl.protocol}//${wdUrl.host}`;
+  rewrites.push([forwardFrom, forwardTo]);
+
+  rewrites.push([
+    // replace params
+    `ws=${wdUrl.host}`,
+    `ws=${serverHost}:${serverPort}/${CDP_METHODS_ROOT}/${this.uuid}/${alias}`,
+  ], [
+    `"/devtools/`,
+    `"/${CDP_METHODS_ROOT}/${this.uuid}/${alias}/devtools/`
+  ]);
+
+  const browserEntityId = extractWsEntityId(browserDebuggerUrl);
+  const forwardToPathname = new URL(forwardTo).pathname;
+  const browserIdPlaceholder = ':browserId';
+  const browserDebuggerPathname = browserEntityId
+    ? `${forwardToPathname}/devtools/browser/${browserIdPlaceholder}`
+    : `${forwardToPathname}/devtools/browser`;
+  const pageIdPlaceholder = ':pageId';
+  const pageDebuggerPathname = `${forwardToPathname}/devtools/page/${pageIdPlaceholder}`;
+
+  for (const [placeholder, fromPathname, toUrlPattern] of [[
+    browserIdPlaceholder,
+    browserDebuggerPathname,
+    browserEntityId ? browserDebuggerUrl.replace(browserEntityId, browserIdPlaceholder) : browserDebuggerUrl,
+  ], [
+    pageIdPlaceholder,
+    pageDebuggerPathname,
+    browserEntityId
+      ? browserDebuggerUrl.replace(`/browser/${browserEntityId}`, `/page/${pageIdPlaceholder}`)
+      : browserDebuggerUrl.replace(/\/browser\/?/, `/page/${pageIdPlaceholder}`),
+  ]]) {
+    await server.addWebSocketHandler(
+      fromPathname, prepareWebSocketForwarder.bind(this)(toUrlPattern, placeholder)
+    );
+  }
+
+  this.proxiedSessions[alias] = {
+    name,
+    alias,
+    root: forwardTo.replace(/^ws/, 'http'),
+    browserDebuggerPathname,
+    pageDebuggerPathname,
+    port: localPort,
+    rewrites,
+  };
+  this.log.info(
+    `Successfully started the proxy for the Devtools target '${name}' at ${forwardTo}: ` +
+    JSON.stringify(this.proxiedSessions[alias], null, 2)
+  );
+  return toProxyInfo.bind(this)(alias);
+}
+
+/**
+ * Stops proxying a Chrome DevTools Protocol target, cleaning up port forwards and WebSocket handlers.
+ *
+ * @this {DevtoolsPlugin}
+ * @param next - The next handler in the plugin chain
+ * @param driver - The Appium driver instance
+ * @param name - The socket name of the target to unproxy
+ * @throws {Error} If the target is not currently being proxied
+ */
+export async function unproxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Promise<any>, driver: Driver, name: string): Promise<void> {
+  const {adb, server} = requireDriverProperties(this.driver);
+
+  const alias = toSocketNameAlias(name);
+  if (!(alias in this.proxiedSessions)) {
+    throw new Error(`The target '${name}' is not being proxied`);
+  }
+
+  this.log.debug(`Stopping the proxy for the Devtools target '${name}'`);
+  const {
+    browserDebuggerPathname,
+    pageDebuggerPathname,
+    port,
+  } = this.proxiedSessions[alias];
+  const steps = [
+    () => server.removeWebSocketHandler(browserDebuggerPathname),
+    () => server.removeWebSocketHandler(pageDebuggerPathname),
+    () => adb.removePortForward(port),
+  ];
+  for (const step of steps) {
+    try {
+      await step();
+    } catch (e: any) {
+      this.log.warn(e.message);
+    }
+  }
+  this.log.info(
+    `Successfully stopped the proxy for the Devtools target '${name}': ` +
+    JSON.stringify(this.proxiedSessions[alias], null, 2)
+  );
+  delete this.proxiedSessions[alias];
+}
+
 function requireDriverProperties(driver: Driver | null): RequiredDriverProperties {
   const result: any = {};
   for (const propName of ['adb', 'server']) {
@@ -171,32 +392,6 @@ function toProxyInfo(this: DevtoolsPlugin, alias: string): ProxyInfo {
   };
 }
 
-/**
- * Lists all available Chrome DevTools Protocol targets on the connected Android device.
- * This includes both proxied and non-proxied targets with their associated information.
- *
- * @this {DevtoolsPlugin}
- * @returns Information about all available DevTools targets, including their proxy status
- */
-export async function listDevtoolsTargets(this: DevtoolsPlugin): Promise<DevtoolsTargetsInfo> {
-  const socketNames = await getCandidateSocketNames.bind(this)();
-  const webviewsMapping = await collectMultipleDetails.bind(this)(socketNames);
-  const targets = Object.entries(webviewsMapping)
-    .map(([name, props]) => {
-      const {pages, info} = props as WebviewProps;
-      const alias = toSocketNameAlias(name);
-      const isProxied = alias in this.proxiedSessions;
-      return {
-        name,
-        pages,
-        info,
-        isProxied,
-        proxyInfo: isProxied ? toProxyInfo.bind(this)(alias) : null,
-      };
-    });
-  return {targets};
-}
-
 function extractWsEntityId(pathname: string): string | null {
   const match = WS_ENTITY_ID_PATTERN.exec(pathname);
   return match ? match[2] : null;
@@ -275,197 +470,4 @@ function prepareWebSocketForwarder(this: DevtoolsPlugin, forwardToUrlPattern: st
     });
   });
   return wss;
-}
-
-/**
- * Proxies a Chrome DevTools Protocol target, making it accessible through the Appium server.
- * This sets up port forwarding, WebSocket handlers, and URL rewriting to enable remote access
- * to the DevTools interface.
- *
- * @this {DevtoolsPlugin}
- * @param next - The next handler in the plugin chain
- * @param driver - The Appium driver instance
- * @param name - The socket name of the target to proxy (e.g., '@webview_devtools_remote_12345')
- * @param port - Optional local port number to use for forwarding. If not provided, an available port will be selected automatically
- * @returns Proxy information including UUID, alias, name, and root URL
- * @throws {Error} If the target is already being proxied, port is busy, or target cannot be proxied
- */
-export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Promise<any>, driver: Driver, name: string, port?: number): Promise<ProxyInfo> {
-  const {adb, server} = requireDriverProperties(this.driver);
-
-  const alias = toSocketNameAlias(name);
-  if (alias in this.proxiedSessions) {
-    throw new Error(`The target '${name}' is already being proxied`);
-  }
-
-  this.log.debug(`Starting the proxy for the Devtools target '${name}'`);
-  let localPort: number;
-  if (port) {
-    localPort = port;
-    if (await checkPortStatus(localPort) !== 'closed') {
-      throw new Error(
-        `The selected port number #${localPort} to forward the Devtools socket '${name}' is busy. ` +
-        `Try to provide another free port number instead.`
-      );
-    }
-  } else {
-    const [startPort, endPort] = DEVTOOLS_BIND_PORTS_RANGE;
-    try {
-      localPort = await findAPortNotInUse(startPort, endPort);
-    } catch {
-      throw new Error(
-        `Cannot find any free port in range ${startPort}..${endPort} ` +
-        `to forward the Devtools socket '${name}'. Try to provide a custom port ` +
-        `number instead.`
-      );
-    }
-  }
-  const remotePort = name.replace(/^@/, '');
-  const removePortForward = async () => {
-    try {
-      await adb.removePortForward(localPort);
-    } catch (e: any) {
-      this.log.debug(`Cannot remove the port forward. Original error: ${e.message}`);
-    }
-  };
-  try {
-    await adb.forwardAbstractPort(localPort, remotePort);
-  } catch (e: any) {
-    throw new Error(
-      `Could not create a port forward to fetch the details of '${name}' socket: ${e.message}`
-    );
-  }
-
-  let details: WebviewProps;
-  try {
-    details = await collectSingleDetails.bind(this)(name, localPort);
-  } catch (e: any) {
-    await removePortForward();
-    throw new Error(`The target '${name}' cannot be proxied. Original error: ${e.message}`);
-  }
-  const browserDebuggerUrl = details.info[DEBUGGER_URL_KEY];
-  if (!browserDebuggerUrl) {
-    this.log.debug(JSON.stringify(details.info));
-    await removePortForward();
-    throw new Error(
-      `The target '${name}' cannot be proxied. ` +
-      `The response to /json/version did not contain the required '${DEBUGGER_URL_KEY}' key`
-    );
-  }
-
-  const rewrites: [string | RegExp, string][] = [];
-
-  const serverProtocol = 'secure' in server && server.secure ? 'wss:' : 'ws:';
-  const addressInfo = server.address();
-  if (!addressInfo || typeof addressInfo === 'string') {
-    await removePortForward();
-    throw new Error('Server address is not available');
-  }
-  const {address: rawServerHost, port: serverPort} = addressInfo;
-  const serverHost = toServerHost(rawServerHost);
-  const forwardTo =
-    `${serverProtocol}//${serverHost}:${serverPort}/${CDP_METHODS_ROOT}/${this.uuid}/${alias}`;
-  let wdUrl: URL;
-  try {
-    wdUrl = new URL(browserDebuggerUrl);
-  } catch {
-    await removePortForward();
-    throw new Error(
-      `The target '${name}' cannot be proxied. ` +
-      `The '${DEBUGGER_URL_KEY}' key value '${browserDebuggerUrl}' in the /json/version response is not a valid URL`
-    );
-  }
-  const forwardFrom = `${wdUrl.protocol}//${wdUrl.host}`;
-  rewrites.push([forwardFrom, forwardTo]);
-
-  rewrites.push([
-    // replace params
-    `ws=${wdUrl.host}`,
-    `ws=${serverHost}:${serverPort}/${CDP_METHODS_ROOT}/${this.uuid}/${alias}`,
-  ], [
-    `"/devtools/`,
-    `"/${CDP_METHODS_ROOT}/${this.uuid}/${alias}/devtools/`
-  ]);
-
-  const browserEntityId = extractWsEntityId(browserDebuggerUrl);
-  const forwardToPathname = new URL(forwardTo).pathname;
-  const browserIdPlaceholder = ':browserId';
-  const browserDebuggerPathname = browserEntityId
-    ? `${forwardToPathname}/devtools/browser/${browserIdPlaceholder}`
-    : `${forwardToPathname}/devtools/browser`;
-  const pageIdPlaceholder = ':pageId';
-  const pageDebuggerPathname = `${forwardToPathname}/devtools/page/${pageIdPlaceholder}`;
-
-  for (const [placeholder, fromPathname, toUrlPattern] of [[
-    browserIdPlaceholder,
-    browserDebuggerPathname,
-    browserEntityId ? browserDebuggerUrl.replace(browserEntityId, browserIdPlaceholder) : browserDebuggerUrl,
-  ], [
-    pageIdPlaceholder,
-    pageDebuggerPathname,
-    browserEntityId
-      ? browserDebuggerUrl.replace(`/browser/${browserEntityId}`, `/page/${pageIdPlaceholder}`)
-      : browserDebuggerUrl.replace(/\/browser\/?/, `/page/${pageIdPlaceholder}`),
-  ]]) {
-    await server.addWebSocketHandler(
-      fromPathname, prepareWebSocketForwarder.bind(this)(toUrlPattern, placeholder)
-    );
-  }
-
-  this.proxiedSessions[alias] = {
-    name,
-    alias,
-    root: forwardTo.replace(/^ws/, 'http'),
-    browserDebuggerPathname,
-    pageDebuggerPathname,
-    port: localPort,
-    rewrites,
-  };
-  this.log.info(
-    `Successfully started the proxy for the Devtools target '${name}' at ${forwardTo}: ` +
-    JSON.stringify(this.proxiedSessions[alias], null, 2)
-  );
-  return toProxyInfo.bind(this)(alias);
-}
-
-/**
- * Stops proxying a Chrome DevTools Protocol target, cleaning up port forwards and WebSocket handlers.
- *
- * @this {DevtoolsPlugin}
- * @param next - The next handler in the plugin chain
- * @param driver - The Appium driver instance
- * @param name - The socket name of the target to unproxy
- * @throws {Error} If the target is not currently being proxied
- */
-export async function unproxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Promise<any>, driver: Driver, name: string): Promise<void> {
-  const {adb, server} = requireDriverProperties(this.driver);
-
-  const alias = toSocketNameAlias(name);
-  if (!(alias in this.proxiedSessions)) {
-    throw new Error(`The target '${name}' is not being proxied`);
-  }
-
-  this.log.debug(`Stopping the proxy for the Devtools target '${name}'`);
-  const {
-    browserDebuggerPathname,
-    pageDebuggerPathname,
-    port,
-  } = this.proxiedSessions[alias];
-  const steps = [
-    () => server.removeWebSocketHandler(browserDebuggerPathname),
-    () => server.removeWebSocketHandler(pageDebuggerPathname),
-    () => adb.removePortForward(port),
-  ];
-  for (const step of steps) {
-    try {
-      await step();
-    } catch (e: any) {
-      this.log.warn(e.message);
-    }
-  }
-  this.log.info(
-    `Successfully stopped the proxy for the Devtools target '${name}': ` +
-    JSON.stringify(this.proxiedSessions[alias], null, 2)
-  );
-  delete this.proxiedSessions[alias];
 }
