@@ -1,4 +1,4 @@
-import type { DevtoolsPlugin } from './plugin';
+import type {DevtoolsPlugin} from './plugin';
 
 export const PLUGIN_INSTANCES = new Set<WeakRef<DevtoolsPlugin>>();
 

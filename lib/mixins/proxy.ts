@@ -1,16 +1,18 @@
 import {util} from 'appium/support';
 import {findAPortNotInUse, checkPortStatus} from 'portscanner';
-import {
-  toSocketNameAlias, fetchInterfaces,
-  V4_BROADCAST_IP, V6_BROADCAST_IP
-} from '../utils';
+import {toSocketNameAlias, fetchInterfaces, V4_BROADCAST_IP, V6_BROADCAST_IP} from '../utils';
 import WebSocket from 'ws';
 import {CDP_METHODS_ROOT} from '../constants';
-import { cdpInfo, cdpList } from './atoms';
-import type { DevtoolsPlugin } from '../plugin';
-import type { BaseDriver } from 'appium/driver';
-import type { RequiredDriverProperties, WebviewProps, DevtoolsTargetsInfo, ProxyInfo } from '../types';
-import type { IncomingMessage } from 'node:http';
+import {cdpInfo, cdpList} from './atoms';
+import type {DevtoolsPlugin} from '../plugin';
+import type {BaseDriver} from 'appium/driver';
+import type {
+  RequiredDriverProperties,
+  WebviewProps,
+  DevtoolsTargetsInfo,
+  ProxyInfo,
+} from '../types';
+import type {IncomingMessage} from 'node:http';
 
 type Driver = BaseDriver<any, any, any, any, any, any>;
 
@@ -28,24 +30,31 @@ const WS_ENTITY_ID_PATTERN = /\/devtools\/(browser|page)\/([a-fA-F0-9-]+)/;
  * This includes both proxied and non-proxied targets with their associated information.
  *
  * @this {DevtoolsPlugin}
+ * @param next - The next handler in the plugin chain (unused)
+ * @param driver - The Appium driver instance (unused)
  * @returns Information about all available DevTools targets, including their proxy status
  */
-export async function listDevtoolsTargets(this: DevtoolsPlugin): Promise<DevtoolsTargetsInfo> {
+export async function listDevtoolsTargets(
+  this: DevtoolsPlugin,
+  next: () => Promise<unknown>,
+  driver: Driver,
+): Promise<DevtoolsTargetsInfo> {
+  void next;
+  void driver;
   const socketNames = await getCandidateSocketNames.bind(this)();
   const webviewsMapping = await collectMultipleDetails.bind(this)(socketNames);
-  const targets = Object.entries(webviewsMapping)
-    .map(([name, props]) => {
-      const {pages, info} = props as WebviewProps;
-      const alias = toSocketNameAlias(name);
-      const isProxied = alias in this.proxiedSessions;
-      return {
-        name,
-        pages,
-        info,
-        isProxied,
-        proxyInfo: isProxied ? toProxyInfo.bind(this)(alias) : null,
-      };
-    });
+  const targets = Object.entries(webviewsMapping).map(([name, props]) => {
+    const {pages, info} = props as WebviewProps;
+    const alias = toSocketNameAlias(name);
+    const isProxied = alias in this.proxiedSessions;
+    return {
+      name,
+      pages,
+      info,
+      isProxied,
+      proxyInfo: isProxied ? toProxyInfo.bind(this)(alias) : null,
+    };
+  });
   return {targets};
 }
 
@@ -62,7 +71,15 @@ export async function listDevtoolsTargets(this: DevtoolsPlugin): Promise<Devtool
  * @returns Proxy information including UUID, alias, name, and root URL
  * @throws {Error} If the target is already being proxied, port is busy, or target cannot be proxied
  */
-export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Promise<any>, driver: Driver, name: string, port?: number): Promise<ProxyInfo> {
+export async function proxyDevtoolsTarget(
+  this: DevtoolsPlugin,
+  next: () => Promise<any>,
+  driver: Driver,
+  name: string,
+  port?: number,
+): Promise<ProxyInfo> {
+  void next;
+  void driver;
   const {adb, server} = requireDriverProperties(this.driver);
 
   const alias = toSocketNameAlias(name);
@@ -74,10 +91,10 @@ export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Prom
   let localPort: number;
   if (port) {
     localPort = port;
-    if (await checkPortStatus(localPort) !== 'closed') {
+    if ((await checkPortStatus(localPort)) !== 'closed') {
       throw new Error(
         `The selected port number #${localPort} to forward the Devtools socket '${name}' is busy. ` +
-        `Try to provide another free port number instead.`
+          `Try to provide another free port number instead.`,
       );
     }
   } else {
@@ -87,8 +104,8 @@ export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Prom
     } catch {
       throw new Error(
         `Cannot find any free port in range ${startPort}..${endPort} ` +
-        `to forward the Devtools socket '${name}'. Try to provide a custom port ` +
-        `number instead.`
+          `to forward the Devtools socket '${name}'. Try to provide a custom port ` +
+          `number instead.`,
       );
     }
   }
@@ -103,9 +120,12 @@ export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Prom
   try {
     await adb.forwardAbstractPort(localPort, remotePort);
   } catch (e: any) {
-    throw new Error(`Could not create a port forward to fetch the details of '${name}' socket: ${e.message}`, {
-      cause: e,
-    });
+    throw new Error(
+      `Could not create a port forward to fetch the details of '${name}' socket: ${e.message}`,
+      {
+        cause: e,
+      },
+    );
   }
 
   let details: WebviewProps;
@@ -123,7 +143,7 @@ export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Prom
     await removePortForward();
     throw new Error(
       `The target '${name}' cannot be proxied. ` +
-      `The response to /json/version did not contain the required '${DEBUGGER_URL_KEY}' key`
+        `The response to /json/version did not contain the required '${DEBUGGER_URL_KEY}' key`,
     );
   }
 
@@ -137,8 +157,7 @@ export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Prom
   }
   const {address: rawServerHost, port: serverPort} = addressInfo;
   const serverHost = toServerHost(rawServerHost);
-  const forwardTo =
-    `${serverProtocol}//${serverHost}:${serverPort}/${CDP_METHODS_ROOT}/${this.uuid}/${alias}`;
+  const forwardTo = `${serverProtocol}//${serverHost}:${serverPort}/${CDP_METHODS_ROOT}/${this.uuid}/${alias}`;
   let wdUrl: URL;
   try {
     wdUrl = new URL(browserDebuggerUrl);
@@ -146,20 +165,20 @@ export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Prom
     await removePortForward();
     throw new Error(
       `The target '${name}' cannot be proxied. ` +
-      `The '${DEBUGGER_URL_KEY}' key value '${browserDebuggerUrl}' in the /json/version response is not a valid URL`
+        `The '${DEBUGGER_URL_KEY}' key value '${browserDebuggerUrl}' in the /json/version response is not a valid URL`,
     );
   }
   const forwardFrom = `${wdUrl.protocol}//${wdUrl.host}`;
   rewrites.push([forwardFrom, forwardTo]);
 
-  rewrites.push([
-    // replace params
-    `ws=${wdUrl.host}`,
-    `ws=${serverHost}:${serverPort}/${CDP_METHODS_ROOT}/${this.uuid}/${alias}`,
-  ], [
-    `"/devtools/`,
-    `"/${CDP_METHODS_ROOT}/${this.uuid}/${alias}/devtools/`
-  ]);
+  rewrites.push(
+    [
+      // replace params
+      `ws=${wdUrl.host}`,
+      `ws=${serverHost}:${serverPort}/${CDP_METHODS_ROOT}/${this.uuid}/${alias}`,
+    ],
+    [`"/devtools/`, `"/${CDP_METHODS_ROOT}/${this.uuid}/${alias}/devtools/`],
+  );
 
   const browserEntityId = extractWsEntityId(browserDebuggerUrl);
   const forwardToPathname = new URL(forwardTo).pathname;
@@ -170,19 +189,25 @@ export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Prom
   const pageIdPlaceholder = ':pageId';
   const pageDebuggerPathname = `${forwardToPathname}/devtools/page/${pageIdPlaceholder}`;
 
-  for (const [placeholder, fromPathname, toUrlPattern] of [[
-    browserIdPlaceholder,
-    browserDebuggerPathname,
-    browserEntityId ? browserDebuggerUrl.replace(browserEntityId, browserIdPlaceholder) : browserDebuggerUrl,
-  ], [
-    pageIdPlaceholder,
-    pageDebuggerPathname,
-    browserEntityId
-      ? browserDebuggerUrl.replace(`/browser/${browserEntityId}`, `/page/${pageIdPlaceholder}`)
-      : browserDebuggerUrl.replace(/\/browser\/?/, `/page/${pageIdPlaceholder}`),
-  ]]) {
+  for (const [placeholder, fromPathname, toUrlPattern] of [
+    [
+      browserIdPlaceholder,
+      browserDebuggerPathname,
+      browserEntityId
+        ? browserDebuggerUrl.replace(browserEntityId, browserIdPlaceholder)
+        : browserDebuggerUrl,
+    ],
+    [
+      pageIdPlaceholder,
+      pageDebuggerPathname,
+      browserEntityId
+        ? browserDebuggerUrl.replace(`/browser/${browserEntityId}`, `/page/${pageIdPlaceholder}`)
+        : browserDebuggerUrl.replace(/\/browser\/?/, `/page/${pageIdPlaceholder}`),
+    ],
+  ]) {
     await server.addWebSocketHandler(
-      fromPathname, prepareWebSocketForwarder.bind(this)(toUrlPattern, placeholder)
+      fromPathname,
+      prepareWebSocketForwarder.bind(this)(toUrlPattern, placeholder),
     );
   }
 
@@ -197,7 +222,7 @@ export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Prom
   };
   this.log.info(
     `Successfully started the proxy for the Devtools target '${name}' at ${forwardTo}: ` +
-    JSON.stringify(this.proxiedSessions[alias], null, 2)
+      JSON.stringify(this.proxiedSessions[alias], null, 2),
   );
   return toProxyInfo.bind(this)(alias);
 }
@@ -211,7 +236,14 @@ export async function proxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Prom
  * @param name - The socket name of the target to unproxy
  * @throws {Error} If the target is not currently being proxied
  */
-export async function unproxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Promise<any>, driver: Driver, name: string): Promise<void> {
+export async function unproxyDevtoolsTarget(
+  this: DevtoolsPlugin,
+  next: () => Promise<any>,
+  driver: Driver,
+  name: string,
+): Promise<void> {
+  void next;
+  void driver;
   const {adb, server} = requireDriverProperties(this.driver);
 
   const alias = toSocketNameAlias(name);
@@ -220,11 +252,7 @@ export async function unproxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Pr
   }
 
   this.log.debug(`Stopping the proxy for the Devtools target '${name}'`);
-  const {
-    browserDebuggerPathname,
-    pageDebuggerPathname,
-    port,
-  } = this.proxiedSessions[alias];
+  const {browserDebuggerPathname, pageDebuggerPathname, port} = this.proxiedSessions[alias];
   const steps = [
     () => server.removeWebSocketHandler(browserDebuggerPathname),
     () => server.removeWebSocketHandler(pageDebuggerPathname),
@@ -239,7 +267,7 @@ export async function unproxyDevtoolsTarget(this: DevtoolsPlugin, next: () => Pr
   }
   this.log.info(
     `Successfully stopped the proxy for the Devtools target '${name}': ` +
-    JSON.stringify(this.proxiedSessions[alias], null, 2)
+      JSON.stringify(this.proxiedSessions[alias], null, 2),
   );
   delete this.proxiedSessions[alias];
 }
@@ -250,7 +278,7 @@ function requireDriverProperties(driver: Driver | null): RequiredDriverPropertie
     if (!driver?.[propName as keyof Driver]) {
       throw new Error(
         `The driver '${driver?.constructor.name}' does not have the required '${propName}' property. ` +
-        'Is it a valid Android driver?'
+          'Is it a valid Android driver?',
       );
     }
     result[propName] = driver[propName as keyof Driver];
@@ -299,7 +327,7 @@ async function getCandidateSocketNames(this: DevtoolsPlugin): Promise<string[]> 
   } else {
     this.log.debug(
       `Parsed ${names.length} active devtools ${util.pluralize('socket', names.length, false)}: ` +
-        JSON.stringify(names)
+        JSON.stringify(names),
     );
   }
   // sometimes the webview process shows up multiple times per app
@@ -316,7 +344,11 @@ async function getCandidateSocketNames(this: DevtoolsPlugin): Promise<string[]> 
  * @param localPort
  * @returns
  */
-async function collectSingleDetails(this: DevtoolsPlugin, socketName: string, localPort: number): Promise<WebviewProps> {
+async function collectSingleDetails(
+  this: DevtoolsPlugin,
+  socketName: string,
+  localPort: number,
+): Promise<WebviewProps> {
   this.log.debug(`Collecting CDP data of '${socketName}'`);
   const [info, pages] = await Promise.all([cdpInfo(localPort), cdpList(localPort)]);
   this.log.info(`Collected CDP details of '${socketName}'`);
@@ -332,7 +364,10 @@ async function collectSingleDetails(this: DevtoolsPlugin, socketName: string, lo
  * @param socketNames
  * @returns
  */
-async function collectMultipleDetails(this: DevtoolsPlugin, socketNames: string[]): Promise<Record<string, WebviewProps>> {
+async function collectMultipleDetails(
+  this: DevtoolsPlugin,
+  socketNames: string[],
+): Promise<Record<string, WebviewProps>> {
   const {adb} = requireDriverProperties(this.driver);
   if (socketNames.length === 0) {
     return {};
@@ -340,7 +375,9 @@ async function collectMultipleDetails(this: DevtoolsPlugin, socketNames: string[
 
   const details: Record<string, WebviewProps> = {};
   // Connect to each devtools socket and retrieve web view details
-  this.log.debug(`Collecting CDP data of ${util.pluralize('candidate webview', socketNames.length, true)}`);
+  this.log.debug(
+    `Collecting CDP data of ${util.pluralize('candidate webview', socketNames.length, true)}`,
+  );
   const [startPort, endPort] = DEVTOOLS_LOOKUP_PORTS_RANGE;
   let localPort: number;
   try {
@@ -348,7 +385,7 @@ async function collectMultipleDetails(this: DevtoolsPlugin, socketNames: string[
   } catch {
     throw new Error(
       `Cannot find any free port to forward candidate Devtools sockets ` +
-      `in range ${startPort}..${endPort}`
+        `in range ${startPort}..${endPort}`,
     );
   }
   for (const socketName of socketNames) {
@@ -357,7 +394,7 @@ async function collectMultipleDetails(this: DevtoolsPlugin, socketNames: string[
       await adb.forwardAbstractPort(localPort, remotePort);
     } catch (e: any) {
       this.log.debug(
-        `Could not create a port forward to fetch the details of '${socketName}' socket: ${e.message}`
+        `Could not create a port forward to fetch the details of '${socketName}' socket: ${e.message}`,
       );
       continue;
     }
@@ -374,7 +411,9 @@ async function collectMultipleDetails(this: DevtoolsPlugin, socketNames: string[
       }
     }
   }
-  this.log.info(`Collected CDP details of ${util.pluralize('webview', Object.keys(details).length, true)}`);
+  this.log.info(
+    `Collected CDP details of ${util.pluralize('webview', Object.keys(details).length, true)}`,
+  );
   return details;
 }
 
@@ -413,14 +452,15 @@ function toServerHost(rawServerHost: string): string {
   return externalIps.length ? externalIps[0] : rawServerHost;
 }
 
-function prepareWebSocketForwarder(this: DevtoolsPlugin, forwardToUrlPattern: string, entityIdPlaceholder: string): WebSocket.Server {
+function prepareWebSocketForwarder(
+  this: DevtoolsPlugin,
+  forwardToUrlPattern: string,
+  entityIdPlaceholder: string,
+): WebSocket.Server {
   const wss = new WebSocket.Server({
     noServer: true,
   });
-  wss.on('connection', (
-    wsUpstream: WebSocket,
-    req: IncomingMessage
-  ) => {
+  wss.on('connection', (wsUpstream: WebSocket, req: IncomingMessage) => {
     this.log.debug(`Got a new websocket connection at ${req.url}`);
     if (!req.url) {
       this.log.debug('The url is empty. Will ignore');
@@ -429,9 +469,10 @@ function prepareWebSocketForwarder(this: DevtoolsPlugin, forwardToUrlPattern: st
     }
     const pathname = req.url;
     const entityId = extractWsEntityId(pathname);
-    const dstUrl = entityId && forwardToUrlPattern.includes(entityIdPlaceholder)
-      ? forwardToUrlPattern.replace(entityIdPlaceholder, entityId)
-      : forwardToUrlPattern;
+    const dstUrl =
+      entityId && forwardToUrlPattern.includes(entityIdPlaceholder)
+        ? forwardToUrlPattern.replace(entityIdPlaceholder, entityId)
+        : forwardToUrlPattern;
     this.log.debug(`Will forward upstream ${req.url} to downstream ${dstUrl}`);
     const wsDownstream = new WebSocket(dstUrl);
     wsDownstream.on('message', (msg, binary) => {
@@ -452,8 +493,7 @@ function prepareWebSocketForwarder(this: DevtoolsPlugin, forwardToUrlPattern: st
     });
     wsDownstream.once('close', (code: number | undefined, reason: Buffer) => {
       this.log.info(
-        `The downstream ${dstUrl} has been closed: ${code}, ` +
-        `${reason || '(no reason given)'}`
+        `The downstream ${dstUrl} has been closed: ${code}, ` + `${reason || '(no reason given)'}`,
       );
       if (wsUpstream.readyState === WebSocket.OPEN) {
         wsUpstream.close(code ?? WS_SERVER_ERROR, reason);
@@ -461,8 +501,7 @@ function prepareWebSocketForwarder(this: DevtoolsPlugin, forwardToUrlPattern: st
     });
     wsUpstream.once('close', (code: number | undefined, reason: Buffer) => {
       this.log.info(
-        `The upstream ${req.url} has been closed: ${code}, ` +
-        `${reason || '(no reason given)'}`
+        `The upstream ${req.url} has been closed: ${code}, ` + `${reason || '(no reason given)'}`,
       );
       if (wsDownstream.readyState === WebSocket.OPEN) {
         wsDownstream.close();

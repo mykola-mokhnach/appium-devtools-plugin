@@ -1,19 +1,21 @@
-import { BasePlugin } from 'appium/plugin';
-import { util } from 'appium/support';
+import {BasePlugin} from 'appium/plugin';
+import {util} from 'appium/support';
 import * as proxyMethods from './mixins/proxy';
 import * as cmdMethods from './mixins/cmds';
-import { CDP_METHODS_ROOT } from './constants';
-import { registerPlugin, findPlugin } from './registry';
-import { log as logger } from './logger';
-import type { BaseDriver } from 'appium/driver';
-import type { ExecuteMethodMap } from '@appium/types';
+import {CDP_METHODS_ROOT} from './constants';
+import {registerPlugin, findPlugin} from './registry';
+import {log as logger} from './logger';
+import type {BaseDriver} from 'appium/driver';
+import type {ExecuteMethodMap, Plugin, PluginCommand} from '@appium/types';
 
 type Driver = BaseDriver<any, any, any, any, any, any>;
-import type { Express, Request, Response } from 'express';
-import type { ProxiedSession } from './types';
+import type {Express, Request, Response} from 'express';
+import type {ProxiedSession} from './types';
+
+type DevtoolsPluginMapType = Plugin & Record<string, PluginCommand>;
 
 export class DevtoolsPlugin extends BasePlugin {
-  static readonly executeMethodMap: ExecuteMethodMap<DevtoolsPlugin> = {
+  static readonly executeMethodMap: ExecuteMethodMap<DevtoolsPluginMapType> = {
     'devtools: listTargets': {
       command: 'listDevtoolsTargets',
     },
@@ -29,8 +31,8 @@ export class DevtoolsPlugin extends BasePlugin {
       params: {
         required: ['name'],
       },
-    }
-  } as const;
+    },
+  };
 
   readonly proxiedSessions: Record<string, ProxiedSession> = {};
   readonly uuid: string = util.uuidV4();
@@ -61,16 +63,13 @@ export class DevtoolsPlugin extends BasePlugin {
    * @param expressApp - The Express application instance to register routes on
    */
   static async updateServer(expressApp: Express): Promise<void> {
-    const buildHanlder = (
-      methodName: string,
-    ) => async (
-      req: Request,
-      res: Response
-    ) => {
+    const buildHanlder = (methodName: string) => async (req: Request, res: Response) => {
       const uuid = Array.isArray(req.params.uuid) ? req.params.uuid[0] : req.params.uuid;
       const plugin = findPlugin(uuid);
       if (!plugin) {
-        logger.debug(`Cannot find any plugin instance identified by ${req.params.uuid}. Is it still alive?`);
+        logger.debug(
+          `Cannot find any plugin instance identified by ${req.params.uuid}. Is it still alive?`,
+        );
         res.status(404).send();
         return;
       }
@@ -78,7 +77,9 @@ export class DevtoolsPlugin extends BasePlugin {
         const result = await (cmdMethods as any)[methodName].bind(plugin)(req);
         res.status(200).json(result);
       } catch (e: any) {
-        logger.warn(`Got an unexpected error while executing devtools method '${methodName}': ${e.message}`);
+        logger.warn(
+          `Got an unexpected error while executing devtools method '${methodName}': ${e.message}`,
+        );
         logger.debug(e.stack);
         res.status(404).send();
       }
@@ -91,13 +92,16 @@ export class DevtoolsPlugin extends BasePlugin {
     expressApp.get(`/${CDP_METHODS_ROOT}/:uuid/:alias/json/protocol`, buildHanlder('cmdProtocol'));
     expressApp.put(`/${CDP_METHODS_ROOT}/:uuid/:alias/json/new`, buildHanlder('cmdOpenTab'));
     expressApp.get(
-      `/${CDP_METHODS_ROOT}/:uuid/:alias/json/activate/:targetId`, buildHanlder('cmdActivateTab')
+      `/${CDP_METHODS_ROOT}/:uuid/:alias/json/activate/:targetId`,
+      buildHanlder('cmdActivateTab'),
     );
     expressApp.get(
-      `/${CDP_METHODS_ROOT}/:uuid/:alias/json/close/:targetId`, buildHanlder('cmdCloseTab')
+      `/${CDP_METHODS_ROOT}/:uuid/:alias/json/close/:targetId`,
+      buildHanlder('cmdCloseTab'),
     );
     expressApp.get(
-      `/${CDP_METHODS_ROOT}/:uuid/:alias/devtools/inspector.html`, buildHanlder('cmdInspector')
+      `/${CDP_METHODS_ROOT}/:uuid/:alias/devtools/inspector.html`,
+      buildHanlder('cmdInspector'),
     );
   }
 
@@ -112,7 +116,12 @@ export class DevtoolsPlugin extends BasePlugin {
    * @param cmdArgs - Additional arguments for the command
    * @returns The result of the command execution
    */
-  async handle(next: () => Promise<any>, driver: Driver, cmdName: string, ...cmdArgs: any[]): Promise<any> {
+  async handle(
+    next: () => Promise<any>,
+    driver: Driver,
+    cmdName: string,
+    ...cmdArgs: any[]
+  ): Promise<any> {
     if (!this.driverRef && 'adb' in driver && driver.adb) {
       this.driverRef = new WeakRef(driver);
       this.log.info(`Successfully initialized with ${driver.constructor.name}`);
@@ -124,9 +133,7 @@ export class DevtoolsPlugin extends BasePlugin {
       case 'deleteSession':
         if (Object.keys(this.proxiedSessions).length > 0) {
           const names = Object.values(this.proxiedSessions).map(({name}) => name);
-          await Promise.all(
-            names.map((name) => this.unproxyDevtoolsTarget(next, driver, name))
-          );
+          await Promise.all(names.map((name) => this.unproxyDevtoolsTarget(next, driver, name)));
         }
         if (this.driverRef) {
           this.driverRef = null;

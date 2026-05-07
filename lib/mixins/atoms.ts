@@ -55,8 +55,11 @@ export async function cdpProtocol(localPort: number): Promise<Record<string, any
  * @param tabUrl - Optional URL to navigate to in the new tab
  * @returns Information about the newly created tab
  */
-export async function cdpOpenTab(localPort: number, tabUrl: string | null = null): Promise<Record<string, any>> {
-  const url = `http://127.0.0.1:${localPort}/json/new${tabUrl ? ('?' + encodeURIComponent(tabUrl)) : ''}`;
+export async function cdpOpenTab(
+  localPort: number,
+  tabUrl: string | null = null,
+): Promise<Record<string, any>> {
+  const url = `http://127.0.0.1:${localPort}/json/new${tabUrl ? '?' + encodeURIComponent(tabUrl) : ''}`;
   return (
     await axios({
       method: 'PUT',
@@ -73,7 +76,10 @@ export async function cdpOpenTab(localPort: number, tabUrl: string | null = null
  * @param targetId - The unique identifier of the target tab to activate
  * @returns Result of the activation operation
  */
-export async function cdpActivateTab(localPort: number, targetId: string): Promise<Record<string, any>> {
+export async function cdpActivateTab(
+  localPort: number,
+  targetId: string,
+): Promise<Record<string, any>> {
   return (
     await axios({
       url: `http://127.0.0.1:${localPort}/json/activate/${targetId}`,
@@ -89,7 +95,10 @@ export async function cdpActivateTab(localPort: number, targetId: string): Promi
  * @param targetId - The unique identifier of the target tab to close
  * @returns Result of the close operation
  */
-export async function cdpCloseTab(localPort: number, targetId: string): Promise<Record<string, any>> {
+export async function cdpCloseTab(
+  localPort: number,
+  targetId: string,
+): Promise<Record<string, any>> {
   return (
     await axios({
       url: `http://127.0.0.1:${localPort}/json/close/${targetId}`,

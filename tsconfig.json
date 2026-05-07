@@ -1,8 +1,14 @@
 {
   "compilerOptions": {
     "outDir": "build",
-    "checkJs": true,
+    "strict": true,
     "types": ["node", "mocha"]
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "rootDir": "."
+    }
   },
   "extends": "@appium/tsconfig/tsconfig.plugin.json",
   "include": ["lib", "test"]

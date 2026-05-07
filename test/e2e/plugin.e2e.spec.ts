@@ -1,6 +1,6 @@
 import {remote as wdio} from 'webdriverio';
-import { waitForCondition } from 'asyncbox';
-import type { Browser } from 'webdriverio';
+import {waitForCondition} from 'asyncbox';
+import type {Browser} from 'webdriverio';
 
 const TEST_CAPS = {
   platformName: 'Android',
@@ -32,16 +32,23 @@ describe('DevtoolsPlugin', function () {
       return this.skip();
     }
 
-    await driver.executeScript('mobile: startActivity', [{
-      component: 'com.android.chrome/com.google.android.apps.chrome.Main',
-      uri: 'https://google.com',
-    }]);
-    await waitForCondition(async () => {
-      const {targets} = await driver.executeScript('devtools: listTargets', []) as {targets: any[]};
-      return targets.length;
-    }, {
-      waitMs: 5000,
-      intervalMs: 300,
-    });
+    await driver.executeScript('mobile: startActivity', [
+      {
+        component: 'com.android.chrome/com.google.android.apps.chrome.Main',
+        uri: 'https://google.com',
+      },
+    ]);
+    await waitForCondition(
+      async () => {
+        const {targets} = (await driver.executeScript('devtools: listTargets', [])) as {
+          targets: any[];
+        };
+        return targets.length;
+      },
+      {
+        waitMs: 5000,
+        intervalMs: 300,
+      },
+    );
   });
 });
