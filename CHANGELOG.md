@@ -1,3 +1,13 @@
+## [2.0.0](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v1.0.3...v2.0.0) (2026-08-01)
+
+### ⚠ BREAKING CHANGES
+
+* appium-devtools-plugin is now an ESM-only package. It can no longer be loaded via CommonJS require(); consumers must use import or dynamic import(). Deep imports into the package's internals are no longer possible — only the public entry point is exposed via exports.
+
+### Features
+
+* Migrate the package to ESM ([#81](https://github.com/mykola-mokhnach/appium-devtools-plugin/issues/81)) ([f87fd35](https://github.com/mykola-mokhnach/appium-devtools-plugin/commit/f87fd35792fe5fbc8b2a73eedffbc402f7f1f27f))
+
 ## [1.0.3](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v1.0.2...v1.0.3) (2026-05-06)
 
 ### Bug Fixes
