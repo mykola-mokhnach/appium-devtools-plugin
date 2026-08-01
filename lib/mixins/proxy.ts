@@ -5,6 +5,7 @@ import type {BaseDriver} from 'appium/driver.js';
 import {util} from 'appium/support.js';
 import {findAPortNotInUse, checkPortStatus} from 'portscanner';
 import WebSocket, {WebSocketServer} from 'ws';
+import type {RawData} from 'ws';
 
 import {CDP_METHODS_ROOT} from '../constants.js';
 import type {DevtoolsPlugin} from '../plugin.js';
@@ -464,6 +465,17 @@ function prepareWebSocketForwarder(
         : forwardToUrlPattern;
     this.log.debug(`Will forward upstream ${req.url} to downstream ${dstUrl}`);
     const wsDownstream = new WebSocket(dstUrl);
+    // The downstream connection to the device takes time to establish. Any
+    // upstream message arriving while it is still connecting must be queued
+    // rather than dropped, since real CDP clients commonly send their first
+    // command right after the upstream socket opens.
+    const pendingUpstreamMessages: {msg: RawData; binary: boolean}[] = [];
+    wsDownstream.once('open', () => {
+      for (const {msg, binary} of pendingUpstreamMessages) {
+        wsDownstream.send(msg, {binary});
+      }
+      pendingUpstreamMessages.length = 0;
+    });
     wsDownstream.on('message', (msg, binary) => {
       if (wsUpstream.readyState === WebSocket.OPEN) {
         wsUpstream.send(msg, {binary});
@@ -472,6 +484,8 @@ function prepareWebSocketForwarder(
     wsUpstream.on('message', (msg, binary) => {
       if (wsDownstream.readyState === WebSocket.OPEN) {
         wsDownstream.send(msg, {binary});
+      } else if (wsDownstream.readyState === WebSocket.CONNECTING) {
+        pendingUpstreamMessages.push({msg, binary});
       }
     });
     wsDownstream.once('error', (e: Error) => {
