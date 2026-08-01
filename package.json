@@ -67,7 +67,7 @@
     "@appium/types": "^1.0.0",
     "@types/chai": "^5.2.3",
     "@types/express": "^5.0.3",
-    "@types/node": "^25.0.9",
+    "@types/node": "^26.1.2",
     "@types/portscanner": "^2.1.4",
     "asyncbox": "^6.1.0",
     "chai": "^6.0.0",
