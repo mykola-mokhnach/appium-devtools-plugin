@@ -1,3 +1,9 @@
+## [2.0.2](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v2.0.1...v2.0.2) (2026-08-01)
+
+### Miscellaneous Chores
+
+* Drop chai ([#83](https://github.com/mykola-mokhnach/appium-devtools-plugin/issues/83)) ([e33029b](https://github.com/mykola-mokhnach/appium-devtools-plugin/commit/e33029bc8f733ebb0303405ec9c7bca8ce479c84))
+
 ## [2.0.1](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v2.0.0...v2.0.1) (2026-08-01)
 
 ### Miscellaneous Chores
