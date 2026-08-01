@@ -1,18 +1,19 @@
-import {util} from 'appium/support';
+import {util} from 'appium/support.js';
 import {findAPortNotInUse, checkPortStatus} from 'portscanner';
-import {toSocketNameAlias, fetchInterfaces, V4_BROADCAST_IP, V6_BROADCAST_IP} from '../utils';
-import WebSocket from 'ws';
-import {CDP_METHODS_ROOT} from '../constants';
-import {cdpInfo, cdpList} from './atoms';
-import type {DevtoolsPlugin} from '../plugin';
-import type {BaseDriver} from 'appium/driver';
+import {toSocketNameAlias, fetchInterfaces, V4_BROADCAST_IP, V6_BROADCAST_IP} from '../utils.js';
+import WebSocket, {WebSocketServer} from 'ws';
+import {CDP_METHODS_ROOT} from '../constants.js';
+import {cdpInfo, cdpList} from './atoms.js';
+import type {DevtoolsPlugin} from '../plugin.js';
+import type {BaseDriver} from 'appium/driver.js';
 import type {
   RequiredDriverProperties,
   WebviewProps,
   DevtoolsTargetsInfo,
   ProxyInfo,
-} from '../types';
+} from '../types.js';
 import type {IncomingMessage} from 'node:http';
+import type {WSServer} from '@appium/types';
 
 type Driver = BaseDriver<any, any, any, any, any, any>;
 
@@ -207,7 +208,10 @@ export async function proxyDevtoolsTarget(
   ]) {
     await server.addWebSocketHandler(
       fromPathname,
-      prepareWebSocketForwarder.bind(this)(toUrlPattern, placeholder),
+      // 'ws' resolves to different type declarations depending on the module resolution mode
+      // of the consuming package, so the ESM-resolved WebSocketServer type is not structurally
+      // identical to the CJS-resolved one @appium/types expects here.
+      prepareWebSocketForwarder.bind(this)(toUrlPattern, placeholder) as unknown as WSServer,
     );
   }
 
@@ -456,8 +460,8 @@ function prepareWebSocketForwarder(
   this: DevtoolsPlugin,
   forwardToUrlPattern: string,
   entityIdPlaceholder: string,
-): WebSocket.Server {
-  const wss = new WebSocket.Server({
+): WebSocketServer {
+  const wss = new WebSocketServer({
     noServer: true,
   });
   wss.on('connection', (wsUpstream: WebSocket, req: IncomingMessage) => {

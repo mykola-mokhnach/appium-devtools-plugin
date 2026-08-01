@@ -1,4 +1,6 @@
-import {DevtoolsPlugin} from '../../lib/plugin';
+import {describe, it, beforeEach} from 'node:test';
+
+import {DevtoolsPlugin} from '../../lib/plugin.js';
 import {expect} from 'chai';
 
 describe('DevtoolsPlugin', function () {
