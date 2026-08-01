@@ -1,9 +1,30 @@
 import assert from 'node:assert/strict';
+import os from 'node:os';
 import {describe, it} from 'node:test';
 
+import {fetchInterfaces, toSocketNameAlias} from '../../lib/utils.js';
 import {replaceDeep} from '../../lib/utils.js';
 
 describe('utils', function () {
+  it('should compute a stable sha1 alias for a socket name', function () {
+    const alias = toSocketNameAlias('@webview_devtools_remote_12345');
+    assert.match(alias, /^[0-9a-f]{40}$/);
+    assert.strictEqual(alias, toSocketNameAlias('@webview_devtools_remote_12345'));
+    assert.notStrictEqual(alias, toSocketNameAlias('@webview_devtools_remote_67890'));
+  });
+
+  it('should filter network interfaces by family', function () {
+    const allInterfaces = Object.values(os.networkInterfaces())
+      .filter((list): list is os.NetworkInterfaceInfo[] => Array.isArray(list))
+      .flat();
+    const expectedV4 = allInterfaces.filter(({family}) => [4, 'IPv4'].includes(family as any));
+    const expectedV6 = allInterfaces.filter(({family}) => [6, 'IPv6'].includes(family as any));
+
+    assert.deepStrictEqual(fetchInterfaces(4), expectedV4);
+    assert.deepStrictEqual(fetchInterfaces(6), expectedV6);
+    assert.deepStrictEqual(fetchInterfaces(null), allInterfaces);
+  });
+
   it('should perform deep replacement', function () {
     const replaceMap: [string | RegExp, string][] = [
       [
