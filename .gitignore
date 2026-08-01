@@ -6,5 +6,6 @@ build
 *.iml
 coverage
 .nyc_output/
+npm-shrinkwrap.json
 package-lock.json*
 .vscode

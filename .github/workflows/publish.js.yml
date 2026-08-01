@@ -28,6 +28,14 @@ jobs:
       name: Linter
     - run: npm run test
       name: Unit Test
+    - run: |
+        rm -rf node_modules
+        npm prune --omit=dev --omit=peer --no-package-lock
+      name: Remove dev dependencies and appium peer dependency
+    - run: npm shrinkwrap --omit=dev --omit=peer
+      name: Create shrinkwrap
+    - run: npm install --only=dev --no-package-lock
+      name: Install dev dependencies for the release
     - run: npx semantic-release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
