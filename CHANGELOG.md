@@ -1,3 +1,9 @@
+## [2.0.1](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v2.0.0...v2.0.1) (2026-08-01)
+
+### Miscellaneous Chores
+
+* Integrate oxc and release configs ([#82](https://github.com/mykola-mokhnach/appium-devtools-plugin/issues/82)) ([8cb3105](https://github.com/mykola-mokhnach/appium-devtools-plugin/commit/8cb31058c3f815b73fd8b80f232da3a5f1562f75))
+
 ## [2.0.0](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v1.0.3...v2.0.0) (2026-08-01)
 
 ### ⚠ BREAKING CHANGES
