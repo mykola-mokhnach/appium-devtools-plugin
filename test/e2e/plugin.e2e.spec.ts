@@ -1,3 +1,5 @@
+import {describe, it, beforeEach, afterEach} from 'node:test';
+
 import {remote as wdio} from 'webdriverio';
 import {waitForCondition} from 'asyncbox';
 import type {Browser} from 'webdriverio';
@@ -26,10 +28,10 @@ describe('DevtoolsPlugin', function () {
     }
   });
 
-  it('should list web views', async function () {
+  it('should list web views', async function (t) {
     if (process.env.CI) {
       // Not sure how to get rid of Chrome Welcome screen in the CI env
-      return this.skip();
+      return t.skip();
     }
 
     await driver.executeScript('mobile: startActivity', [

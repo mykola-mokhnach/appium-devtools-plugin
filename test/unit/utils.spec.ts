@@ -1,4 +1,6 @@
-import {replaceDeep} from '../../lib/utils';
+import {describe, it} from 'node:test';
+
+import {replaceDeep} from '../../lib/utils.js';
 import {expect} from 'chai';
 
 describe('utils', function () {

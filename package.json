@@ -24,12 +24,18 @@
   "author": "Mykola Mokhnach",
   "types": "./build/lib/index.d.ts",
   "files": [
-    "build",
-    "docs",
+    "build/lib",
     "lib",
-    "tsconfig.json",
-    "!build/tsconfig.tsbuildinfo"
+    "tsconfig.json"
   ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./build/lib/index.d.ts",
+      "import": "./build/lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "prettier": {
     "bracketSpacing": false,
     "printWidth": 100,
@@ -39,14 +45,14 @@
     "build": "tsc -b",
     "clean": "npm run build -- --clean",
     "dev": "npm run build -- --watch",
-    "e2e-test": "mocha --exit --timeout 10m \"./test/e2e/**/*.e2e.spec.ts\"",
+    "e2e-test": "node --enable-source-maps --test --test-force-exit --test-concurrency=1 --test-timeout=600000 \"./build/test/e2e/**/*.e2e.spec.js\"",
     "format": "prettier --write \"**/*.{js,ts,json}\"",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "lint:staged": "lint-staged",
     "prepare": "npm run rebuild",
     "rebuild": "npm run clean && npm run build",
-    "test": "mocha --exit --timeout 1m \"./test/unit/**/*.spec.ts\""
+    "test": "node --enable-source-maps --test --test-force-exit --test-timeout=60000 \"./build/test/unit/**/*.spec.js\""
   },
   "dependencies": {
     "axios": "^1.12.0",
@@ -81,18 +87,15 @@
     "@semantic-release/git": "^10.0.1",
     "@types/chai": "^5.2.3",
     "@types/express": "^5.0.3",
-    "@types/mocha": "^10.0.0",
     "@types/node": "^25.0.9",
     "@types/portscanner": "^2.1.4",
     "asyncbox": "^6.1.0",
     "chai": "^6.0.0",
     "chai-as-promised": "^8.0.0",
     "conventional-changelog-conventionalcommits": "^9.0.0",
-    "mocha": "^11.0.1",
     "prettier": "^3.0.1",
     "semantic-release": "^25.0.2",
     "sinon": "^22.0.0",
-    "ts-node": "^10.9.1",
     "typescript": "^6.0.3",
     "webdriverio": "^9.4.1"
   }

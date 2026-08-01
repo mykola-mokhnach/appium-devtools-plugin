@@ -1,4 +1,4 @@
-import {errors} from 'appium/driver';
+import {errors} from 'appium/driver.js';
 import type {Request} from 'express';
 import {
   cdpInfo,
@@ -8,10 +8,10 @@ import {
   cdpActivateTab,
   cdpCloseTab,
   cdpInspector,
-} from './atoms';
-import {replaceDeep} from '../utils';
-import type {DevtoolsPlugin} from '../plugin';
-import type {ProxiedSession} from '../types';
+} from './atoms.js';
+import {replaceDeep} from '../utils.js';
+import type {DevtoolsPlugin} from '../plugin.js';
+import type {ProxiedSession} from '../types.js';
 
 /**
  * Returns version information for a proxied DevTools target with URL rewrites applied.

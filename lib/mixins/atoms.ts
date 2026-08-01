@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {CDP_REQ_TIMEOUT_MS} from '../constants';
+import {CDP_REQ_TIMEOUT_MS} from '../constants.js';
 
 // https://chromedevtools.github.io/devtools-protocol/
 
