@@ -34,5 +34,7 @@ jobs:
       run: npm run build
     - name: Run linter
       run: npm run lint
+    - name: Run format check
+      run: npm run format:check
     - name: Run unit tests
       run: npm run test

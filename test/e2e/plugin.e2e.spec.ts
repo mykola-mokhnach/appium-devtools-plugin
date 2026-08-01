@@ -1,7 +1,7 @@
 import {describe, it, beforeEach, afterEach} from 'node:test';
 
-import {remote as wdio} from 'webdriverio';
 import {waitForCondition} from 'asyncbox';
+import {remote as wdio} from 'webdriverio';
 import type {Browser} from 'webdriverio';
 
 const TEST_CAPS = {
