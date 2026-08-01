@@ -25,6 +25,7 @@
   "files": [
     "build/lib",
     "lib",
+    "npm-shrinkwrap.json",
     "tsconfig.json"
   ],
   "type": "module",
@@ -65,13 +66,10 @@
     "@appium/support": "^7.0.0",
     "@appium/tsconfig": "^1.2.0",
     "@appium/types": "^1.0.0",
-    "@types/chai": "^5.2.3",
     "@types/express": "^5.0.3",
     "@types/node": "^25.0.9",
     "@types/portscanner": "^2.1.4",
     "asyncbox": "^6.1.0",
-    "chai": "^6.0.0",
-    "chai-as-promised": "^8.0.0",
     "sinon": "^22.0.0",
     "webdriverio": "^9.4.1"
   },

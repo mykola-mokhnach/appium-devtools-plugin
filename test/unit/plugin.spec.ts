@@ -1,6 +1,5 @@
+import assert from 'node:assert/strict';
 import {describe, it, beforeEach} from 'node:test';
-
-import {expect} from 'chai';
 
 import {DevtoolsPlugin} from '../../lib/plugin.js';
 
@@ -16,18 +15,18 @@ describe('DevtoolsPlugin', function () {
   });
 
   it('should init properties after session creation', async function () {
-    expect(plugin.driver === null || plugin.driver === undefined).to.be.true;
+    assert.strictEqual(plugin.driver === null || plugin.driver === undefined, true);
     await plugin.handle(async () => {}, driverWithAdb as any, 'createSession');
-    expect(plugin.driver === null || plugin.driver === undefined).to.be.false;
+    assert.strictEqual(plugin.driver === null || plugin.driver === undefined, false);
   });
   it('should reset properties after session deletion', async function () {
     await plugin.handle(async () => {}, driverWithAdb as any, 'createSession');
     await plugin.handle(async () => {}, driverWithAdb as any, 'deleteSession');
-    expect(plugin.driver === null || plugin.driver === undefined).to.be.true;
+    assert.strictEqual(plugin.driver === null || plugin.driver === undefined, true);
   });
   it('should init properties after session creation if the driver has no adb', async function () {
-    expect(plugin.driver === null || plugin.driver === undefined).to.be.true;
+    assert.strictEqual(plugin.driver === null || plugin.driver === undefined, true);
     await plugin.handle(async () => {}, driverWoAdb as any, 'createSession');
-    expect(plugin.driver === null || plugin.driver === undefined).to.be.true;
+    assert.strictEqual(plugin.driver === null || plugin.driver === undefined, true);
   });
 });
