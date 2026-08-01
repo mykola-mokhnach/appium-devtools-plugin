@@ -1,3 +1,9 @@
+## [2.1.0](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v2.0.2...v2.1.0) (2026-08-01)
+
+### Features
+
+* e2e coverage ([#85](https://github.com/mykola-mokhnach/appium-devtools-plugin/issues/85)) ([2da88bf](https://github.com/mykola-mokhnach/appium-devtools-plugin/commit/2da88bf3cf6308d0cc6acdeb04e13699302326bd))
+
 ## [2.0.2](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v2.0.1...v2.0.2) (2026-08-01)
 
 ### Miscellaneous Chores
