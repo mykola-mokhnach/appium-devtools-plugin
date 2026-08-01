@@ -1,7 +1,8 @@
 import {describe, it} from 'node:test';
 
-import {replaceDeep} from '../../lib/utils.js';
 import {expect} from 'chai';
+
+import {replaceDeep} from '../../lib/utils.js';
 
 describe('utils', function () {
   it('should perform deep replacement', function () {
@@ -30,8 +31,7 @@ describe('utils', function () {
             title: 'Yahoo',
             type: 'page',
             url: 'https://www.yahoo.com/',
-            webSocketDebuggerUrl:
-              'ws://localhost:9222/devtools/page/DAB7FB6187B554E10B0BD18821265734',
+            webSocketDebuggerUrl: 'ws://localhost:9222/devtools/page/DAB7FB6187B554E10B0BD18821265734',
           },
           {
             Browser: 'Chrome/72.0.3601.0',
@@ -40,8 +40,7 @@ describe('utils', function () {
               'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3601.0 Safari/537.36',
             'V8-Version': '7.2.233',
             'WebKit-Version': '537.36 (@cfede9db1d154de0468cb0538479f34c0755a0f4)',
-            webSocketDebuggerUrl:
-              'ws://localhost:9222/devtools/browser/b0b8a4fb-bb17-4359-9533-a8d9f3908bd8',
+            webSocketDebuggerUrl: 'ws://localhost:9222/devtools/browser/b0b8a4fb-bb17-4359-9533-a8d9f3908bd8',
           },
         ],
         replaceMap,
@@ -55,8 +54,7 @@ describe('utils', function () {
         title: 'Yahoo',
         type: 'page',
         url: 'https://www.yahoo.com/',
-        webSocketDebuggerUrl:
-          'wss://yolo:9222/session/devtools/page/DAB7FB6187B554E10B0BD18821265734',
+        webSocketDebuggerUrl: 'wss://yolo:9222/session/devtools/page/DAB7FB6187B554E10B0BD18821265734',
       },
       {
         Browser: 'Chrome/72.0.3601.0',
@@ -65,8 +63,7 @@ describe('utils', function () {
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3601.0 Safari/537.36',
         'V8-Version': '7.2.233',
         'WebKit-Version': '537.36 (@cfede9db1d154de0468cb0538479f34c0755a0f4)',
-        webSocketDebuggerUrl:
-          'wss://yolo:9222/session/devtools/browser/b0b8a4fb-bb17-4359-9533-a8d9f3908bd8',
+        webSocketDebuggerUrl: 'wss://yolo:9222/session/devtools/browser/b0b8a4fb-bb17-4359-9533-a8d9f3908bd8',
       },
     ]);
   });

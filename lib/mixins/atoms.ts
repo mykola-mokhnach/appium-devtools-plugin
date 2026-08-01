@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import {CDP_REQ_TIMEOUT_MS} from '../constants.js';
 
 // https://chromedevtools.github.io/devtools-protocol/
@@ -55,10 +56,7 @@ export async function cdpProtocol(localPort: number): Promise<Record<string, any
  * @param tabUrl - Optional URL to navigate to in the new tab
  * @returns Information about the newly created tab
  */
-export async function cdpOpenTab(
-  localPort: number,
-  tabUrl: string | null = null,
-): Promise<Record<string, any>> {
+export async function cdpOpenTab(localPort: number, tabUrl: string | null = null): Promise<Record<string, any>> {
   const url = `http://127.0.0.1:${localPort}/json/new${tabUrl ? '?' + encodeURIComponent(tabUrl) : ''}`;
   return (
     await axios({
@@ -76,10 +74,7 @@ export async function cdpOpenTab(
  * @param targetId - The unique identifier of the target tab to activate
  * @returns Result of the activation operation
  */
-export async function cdpActivateTab(
-  localPort: number,
-  targetId: string,
-): Promise<Record<string, any>> {
+export async function cdpActivateTab(localPort: number, targetId: string): Promise<Record<string, any>> {
   return (
     await axios({
       url: `http://127.0.0.1:${localPort}/json/activate/${targetId}`,
@@ -95,10 +90,7 @@ export async function cdpActivateTab(
  * @param targetId - The unique identifier of the target tab to close
  * @returns Result of the close operation
  */
-export async function cdpCloseTab(
-  localPort: number,
-  targetId: string,
-): Promise<Record<string, any>> {
+export async function cdpCloseTab(localPort: number, targetId: string): Promise<Record<string, any>> {
   return (
     await axios({
       url: `http://127.0.0.1:${localPort}/json/close/${targetId}`,

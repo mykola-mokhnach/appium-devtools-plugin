@@ -1,15 +1,17 @@
+import type {ExecuteMethodMap, Plugin, PluginCommand} from '@appium/types';
+import type {BaseDriver} from 'appium/driver.js';
 import {BasePlugin} from 'appium/plugin.js';
 import {util} from 'appium/support.js';
-import * as proxyMethods from './mixins/proxy.js';
-import * as cmdMethods from './mixins/cmds.js';
+
 import {CDP_METHODS_ROOT} from './constants.js';
-import {registerPlugin, findPlugin} from './registry.js';
 import {log as logger} from './logger.js';
-import type {BaseDriver} from 'appium/driver.js';
-import type {ExecuteMethodMap, Plugin, PluginCommand} from '@appium/types';
+import * as cmdMethods from './mixins/cmds.js';
+import * as proxyMethods from './mixins/proxy.js';
+import {registerPlugin, findPlugin} from './registry.js';
 
 type Driver = BaseDriver<any, any, any, any, any, any>;
 import type {Express, Request, Response} from 'express';
+
 import type {ProxiedSession} from './types.js';
 
 type DevtoolsPluginMapType = Plugin & Record<string, PluginCommand>;
@@ -67,9 +69,7 @@ export class DevtoolsPlugin extends BasePlugin {
       const uuid = Array.isArray(req.params.uuid) ? req.params.uuid[0] : req.params.uuid;
       const plugin = findPlugin(uuid);
       if (!plugin) {
-        logger.debug(
-          `Cannot find any plugin instance identified by ${req.params.uuid}. Is it still alive?`,
-        );
+        logger.debug(`Cannot find any plugin instance identified by ${req.params.uuid}. Is it still alive?`);
         res.status(404).send();
         return;
       }
@@ -77,9 +77,7 @@ export class DevtoolsPlugin extends BasePlugin {
         const result = await (cmdMethods as any)[methodName].bind(plugin)(req);
         res.status(200).json(result);
       } catch (e: any) {
-        logger.warn(
-          `Got an unexpected error while executing devtools method '${methodName}': ${e.message}`,
-        );
+        logger.warn(`Got an unexpected error while executing devtools method '${methodName}': ${e.message}`);
         logger.debug(e.stack);
         res.status(404).send();
       }
@@ -91,18 +89,9 @@ export class DevtoolsPlugin extends BasePlugin {
     expressApp.get(`/${CDP_METHODS_ROOT}/:uuid/:alias/json/list`, buildHanlder('cmdList'));
     expressApp.get(`/${CDP_METHODS_ROOT}/:uuid/:alias/json/protocol`, buildHanlder('cmdProtocol'));
     expressApp.put(`/${CDP_METHODS_ROOT}/:uuid/:alias/json/new`, buildHanlder('cmdOpenTab'));
-    expressApp.get(
-      `/${CDP_METHODS_ROOT}/:uuid/:alias/json/activate/:targetId`,
-      buildHanlder('cmdActivateTab'),
-    );
-    expressApp.get(
-      `/${CDP_METHODS_ROOT}/:uuid/:alias/json/close/:targetId`,
-      buildHanlder('cmdCloseTab'),
-    );
-    expressApp.get(
-      `/${CDP_METHODS_ROOT}/:uuid/:alias/devtools/inspector.html`,
-      buildHanlder('cmdInspector'),
-    );
+    expressApp.get(`/${CDP_METHODS_ROOT}/:uuid/:alias/json/activate/:targetId`, buildHanlder('cmdActivateTab'));
+    expressApp.get(`/${CDP_METHODS_ROOT}/:uuid/:alias/json/close/:targetId`, buildHanlder('cmdCloseTab'));
+    expressApp.get(`/${CDP_METHODS_ROOT}/:uuid/:alias/devtools/inspector.html`, buildHanlder('cmdInspector'));
   }
 
   /**
@@ -116,12 +105,7 @@ export class DevtoolsPlugin extends BasePlugin {
    * @param cmdArgs - Additional arguments for the command
    * @returns The result of the command execution
    */
-  async handle(
-    next: () => Promise<any>,
-    driver: Driver,
-    cmdName: string,
-    ...cmdArgs: any[]
-  ): Promise<any> {
+  async handle(next: () => Promise<any>, driver: Driver, cmdName: string, ...cmdArgs: any[]): Promise<any> {
     if (!this.driverRef && 'adb' in driver && driver.adb) {
       this.driverRef = new WeakRef(driver);
       this.log.info(`Successfully initialized with ${driver.constructor.name}`);

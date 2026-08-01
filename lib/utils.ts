@@ -34,9 +34,7 @@ export function fetchInterfaces(family: 4 | 6 | null = null): os.NetworkInterfac
   const allInterfaces = Object.values(os.networkInterfaces()).filter(
     (ifaceList): ifaceList is os.NetworkInterfaceInfo[] => Array.isArray(ifaceList),
   );
-  return allInterfaces
-    .flat()
-    .filter(({family}) => !familyValue || familyValue.includes(family as any));
+  return allInterfaces.flat().filter(({family}) => !familyValue || familyValue.includes(family as any));
 }
 
 /**
@@ -57,9 +55,7 @@ export function replaceDeep<T>(obj: T, replaceMap: [string | RegExp, string][]):
     let result = val;
     for (const [pattern, replacement] of replaceMap) {
       result =
-        typeof pattern === 'string'
-          ? result.replaceAll(pattern, replacement)
-          : result.replace(pattern, replacement);
+        typeof pattern === 'string' ? result.replaceAll(pattern, replacement) : result.replace(pattern, replacement);
     }
     return result;
   };

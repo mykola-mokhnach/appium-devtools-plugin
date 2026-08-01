@@ -3,32 +3,33 @@
   "version": "2.0.0",
   "description": "Plugin for exposing chromium devtools from Android devices",
   "keywords": [
+    "android",
     "automation",
+    "devtools",
     "javascript",
     "selenium",
-    "webdriver",
-    "android",
-    "devtools",
-    "testing"
+    "testing",
+    "webdriver"
   ],
   "homepage": "https://appium.io",
   "bugs": {
     "url": "https://github.com/mykola-mokhnach/appium-devtools-plugin/issues"
   },
+  "license": "Apache-2.0",
+  "author": "Mykola Mokhnach",
   "repository": {
     "type": "git",
     "url": "https://github.com/mykola-mokhnach/appium-devtools-plugin.git",
     "directory": "packages/images-plugin"
   },
-  "license": "Apache-2.0",
-  "author": "Mykola Mokhnach",
-  "types": "./build/lib/index.d.ts",
   "files": [
     "build/lib",
     "lib",
     "tsconfig.json"
   ],
   "type": "module",
+  "main": "./build/lib/index.js",
+  "types": "./build/lib/index.d.ts",
   "exports": {
     ".": {
       "types": "./build/lib/index.d.ts",
@@ -36,32 +37,49 @@
     },
     "./package.json": "./package.json"
   },
-  "prettier": {
-    "bracketSpacing": false,
-    "printWidth": 100,
-    "singleQuote": true
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -b",
     "clean": "npm run build -- --clean",
     "dev": "npm run build -- --watch",
     "e2e-test": "node --enable-source-maps --test --test-force-exit --test-concurrency=1 --test-timeout=600000 \"./build/test/e2e/**/*.e2e.spec.js\"",
-    "format": "prettier --write \"**/*.{js,ts,json}\"",
-    "lint": "eslint .",
-    "lint:fix": "npm run lint -- --fix",
+    "format": "oxfmt -c oxfmt.config.mjs .",
+    "format:check": "oxfmt -c oxfmt.config.mjs --check .",
+    "lint": "oxlint -c oxlint.config.mjs .",
+    "lint:fix": "oxlint -c oxlint.config.mjs --fix .",
     "lint:staged": "lint-staged",
     "prepare": "npm run rebuild",
     "rebuild": "npm run clean && npm run build",
     "test": "node --enable-source-maps --test --test-force-exit --test-timeout=60000 \"./build/test/unit/**/*.spec.js\""
   },
   "dependencies": {
-    "axios": "^1.12.0",
+    "axios": "^1.18.0",
     "portscanner": "^2.2.0",
-    "source-map-support": "^0.x",
     "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "@appium/oxc-config": "^1.1.0",
+    "@appium/semantic-release-config": "^1.1.0",
+    "@appium/support": "^7.0.0",
+    "@appium/tsconfig": "^1.2.0",
+    "@appium/types": "^1.0.0",
+    "@types/chai": "^5.2.3",
+    "@types/express": "^5.0.3",
+    "@types/node": "^25.0.9",
+    "@types/portscanner": "^2.1.4",
+    "asyncbox": "^6.1.0",
+    "chai": "^6.0.0",
+    "chai-as-promised": "^8.0.0",
+    "sinon": "^22.0.0",
+    "webdriverio": "^9.4.1"
   },
   "peerDependencies": {
     "appium": "^3.0.0-rc.2"
+  },
+  "typedoc": {
+    "entryPoint": "./lib/plugin.ts"
   },
   "engines": {
     "node": "^20.19.0 || ^22.12.0 || >=24.0.0",
@@ -70,33 +88,5 @@
   "appium": {
     "pluginName": "devtools",
     "mainClass": "DevtoolsPlugin"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "typedoc": {
-    "entryPoint": "./lib/plugin.ts"
-  },
-  "main": "./build/lib/index.js",
-  "devDependencies": {
-    "@appium/eslint-config-appium-ts": "^3.0.1",
-    "@appium/support": "^7.0.0",
-    "@appium/tsconfig": "^1.0.0",
-    "@appium/types": "^1.0.0",
-    "@semantic-release/changelog": "^6.0.1",
-    "@semantic-release/git": "^10.0.1",
-    "@types/chai": "^5.2.3",
-    "@types/express": "^5.0.3",
-    "@types/node": "^25.0.9",
-    "@types/portscanner": "^2.1.4",
-    "asyncbox": "^6.1.0",
-    "chai": "^6.0.0",
-    "chai-as-promised": "^8.0.0",
-    "conventional-changelog-conventionalcommits": "^9.0.0",
-    "prettier": "^3.0.1",
-    "semantic-release": "^25.0.2",
-    "sinon": "^22.0.0",
-    "typescript": "^6.0.3",
-    "webdriverio": "^9.4.1"
   }
 }

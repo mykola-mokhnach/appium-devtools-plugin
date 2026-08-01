@@ -1,19 +1,16 @@
+import type {IncomingMessage} from 'node:http';
+
+import type {WSServer} from '@appium/types';
+import type {BaseDriver} from 'appium/driver.js';
 import {util} from 'appium/support.js';
 import {findAPortNotInUse, checkPortStatus} from 'portscanner';
-import {toSocketNameAlias, fetchInterfaces, V4_BROADCAST_IP, V6_BROADCAST_IP} from '../utils.js';
 import WebSocket, {WebSocketServer} from 'ws';
+
 import {CDP_METHODS_ROOT} from '../constants.js';
-import {cdpInfo, cdpList} from './atoms.js';
 import type {DevtoolsPlugin} from '../plugin.js';
-import type {BaseDriver} from 'appium/driver.js';
-import type {
-  RequiredDriverProperties,
-  WebviewProps,
-  DevtoolsTargetsInfo,
-  ProxyInfo,
-} from '../types.js';
-import type {IncomingMessage} from 'node:http';
-import type {WSServer} from '@appium/types';
+import type {RequiredDriverProperties, WebviewProps, DevtoolsTargetsInfo, ProxyInfo} from '../types.js';
+import {toSocketNameAlias, fetchInterfaces, V4_BROADCAST_IP, V6_BROADCAST_IP} from '../utils.js';
+import {cdpInfo, cdpList} from './atoms.js';
 
 type Driver = BaseDriver<any, any, any, any, any, any>;
 
@@ -121,12 +118,9 @@ export async function proxyDevtoolsTarget(
   try {
     await adb.forwardAbstractPort(localPort, remotePort);
   } catch (e: any) {
-    throw new Error(
-      `Could not create a port forward to fetch the details of '${name}' socket: ${e.message}`,
-      {
-        cause: e,
-      },
-    );
+    throw new Error(`Could not create a port forward to fetch the details of '${name}' socket: ${e.message}`, {
+      cause: e,
+    });
   }
 
   let details: WebviewProps;
@@ -194,9 +188,7 @@ export async function proxyDevtoolsTarget(
     [
       browserIdPlaceholder,
       browserDebuggerPathname,
-      browserEntityId
-        ? browserDebuggerUrl.replace(browserEntityId, browserIdPlaceholder)
-        : browserDebuggerUrl,
+      browserEntityId ? browserDebuggerUrl.replace(browserEntityId, browserIdPlaceholder) : browserDebuggerUrl,
     ],
     [
       pageIdPlaceholder,
@@ -379,17 +371,14 @@ async function collectMultipleDetails(
 
   const details: Record<string, WebviewProps> = {};
   // Connect to each devtools socket and retrieve web view details
-  this.log.debug(
-    `Collecting CDP data of ${util.pluralize('candidate webview', socketNames.length, true)}`,
-  );
+  this.log.debug(`Collecting CDP data of ${util.pluralize('candidate webview', socketNames.length, true)}`);
   const [startPort, endPort] = DEVTOOLS_LOOKUP_PORTS_RANGE;
   let localPort: number;
   try {
     localPort = await findAPortNotInUse(startPort, endPort);
   } catch {
     throw new Error(
-      `Cannot find any free port to forward candidate Devtools sockets ` +
-        `in range ${startPort}..${endPort}`,
+      `Cannot find any free port to forward candidate Devtools sockets ` + `in range ${startPort}..${endPort}`,
     );
   }
   for (const socketName of socketNames) {
@@ -397,9 +386,7 @@ async function collectMultipleDetails(
     try {
       await adb.forwardAbstractPort(localPort, remotePort);
     } catch (e: any) {
-      this.log.debug(
-        `Could not create a port forward to fetch the details of '${socketName}' socket: ${e.message}`,
-      );
+      this.log.debug(`Could not create a port forward to fetch the details of '${socketName}' socket: ${e.message}`);
       continue;
     }
 
@@ -415,9 +402,7 @@ async function collectMultipleDetails(
       }
     }
   }
-  this.log.info(
-    `Collected CDP details of ${util.pluralize('webview', Object.keys(details).length, true)}`,
-  );
+  this.log.info(`Collected CDP details of ${util.pluralize('webview', Object.keys(details).length, true)}`);
   return details;
 }
 
@@ -496,17 +481,13 @@ function prepareWebSocketForwarder(
       this.log.info(`Got an error from the upstream ${req.url}: ${e.message}`);
     });
     wsDownstream.once('close', (code: number | undefined, reason: Buffer) => {
-      this.log.info(
-        `The downstream ${dstUrl} has been closed: ${code}, ` + `${reason || '(no reason given)'}`,
-      );
+      this.log.info(`The downstream ${dstUrl} has been closed: ${code}, ` + `${reason || '(no reason given)'}`);
       if (wsUpstream.readyState === WebSocket.OPEN) {
         wsUpstream.close(code ?? WS_SERVER_ERROR, reason);
       }
     });
     wsUpstream.once('close', (code: number | undefined, reason: Buffer) => {
-      this.log.info(
-        `The upstream ${req.url} has been closed: ${code}, ` + `${reason || '(no reason given)'}`,
-      );
+      this.log.info(`The upstream ${req.url} has been closed: ${code}, ` + `${reason || '(no reason given)'}`);
       if (wsDownstream.readyState === WebSocket.OPEN) {
         wsDownstream.close();
       }
