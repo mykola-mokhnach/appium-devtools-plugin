@@ -1,23 +1,19 @@
-import type {ExecuteMethodMap, Plugin, PluginCommand} from '@appium/types';
-import type {BaseDriver} from 'appium/driver.js';
+import type {ExecuteMethodMap, ExternalDriver, Plugin, PluginCommand} from '@appium/types';
 import {BasePlugin} from 'appium/plugin.js';
 import {util} from 'appium/support.js';
+import type {Express, Request, Response} from 'express';
 
 import {CDP_METHODS_ROOT} from './constants.js';
 import {log as logger} from './logger.js';
 import * as cmdMethods from './mixins/cmds.js';
 import * as proxyMethods from './mixins/proxy.js';
 import {registerPlugin, findPlugin} from './registry.js';
-
-type Driver = BaseDriver<any, any, any, any, any, any>;
-import type {Express, Request, Response} from 'express';
-
 import type {ProxiedSession} from './types.js';
 
 type DevtoolsPluginMapType = Plugin & Record<string, PluginCommand>;
 
 export class DevtoolsPlugin extends BasePlugin {
-  static readonly executeMethodMap: ExecuteMethodMap<DevtoolsPluginMapType> = {
+  static override readonly executeMethodMap: ExecuteMethodMap<DevtoolsPluginMapType> = {
     'devtools: listTargets': {
       command: 'listDevtoolsTargets',
     },
@@ -41,7 +37,7 @@ export class DevtoolsPlugin extends BasePlugin {
   listDevtoolsTargets = proxyMethods.listDevtoolsTargets;
   proxyDevtoolsTarget = proxyMethods.proxyDevtoolsTarget;
   unproxyDevtoolsTarget = proxyMethods.unproxyDevtoolsTarget;
-  private driverRef: WeakRef<Driver> | null = null;
+  private driverRef: WeakRef<ExternalDriver> | null = null;
 
   constructor(pluginName: string) {
     super(pluginName);
@@ -53,7 +49,7 @@ export class DevtoolsPlugin extends BasePlugin {
    *
    * @returns The driver instance or null if not available
    */
-  get driver(): Driver | null {
+  get driver(): ExternalDriver | null {
     return this.driverRef?.deref() ?? null;
   }
 
@@ -69,7 +65,7 @@ export class DevtoolsPlugin extends BasePlugin {
       const uuid = Array.isArray(req.params.uuid) ? req.params.uuid[0] : req.params.uuid;
       const plugin = findPlugin(uuid);
       if (!plugin) {
-        logger.debug(`Cannot find any plugin instance identified by ${req.params.uuid}. Is it still alive?`);
+        logger.debug(`Cannot find any plugin instance identified by ${uuid}. Is it still alive?`);
         res.status(404).send();
         return;
       }
@@ -105,7 +101,7 @@ export class DevtoolsPlugin extends BasePlugin {
    * @param cmdArgs - Additional arguments for the command
    * @returns The result of the command execution
    */
-  async handle(next: () => Promise<any>, driver: Driver, cmdName: string, ...cmdArgs: any[]): Promise<any> {
+  async handle(next: () => Promise<any>, driver: ExternalDriver, cmdName: string, ...cmdArgs: any[]): Promise<any> {
     if (!this.driverRef && 'adb' in driver && driver.adb) {
       this.driverRef = new WeakRef(driver);
       this.log.info(`Successfully initialized with ${driver.constructor.name}`);

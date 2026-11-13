@@ -65,7 +65,7 @@ describe('DevtoolsPlugin', function () {
       unproxyStub
         .getCalls()
         .map((call: sinon.SinonSpyCall) => call.args[2])
-        .sort(),
+        .sort((a: string, b: string) => a.localeCompare(b)),
       ['@one', '@two'],
     );
   });

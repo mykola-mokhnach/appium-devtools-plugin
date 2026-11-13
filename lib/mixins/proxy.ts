@@ -1,10 +1,8 @@
 import type {IncomingMessage} from 'node:http';
 
-import type {WSServer} from '@appium/types';
-import type {BaseDriver} from 'appium/driver.js';
-import {util} from 'appium/support.js';
-import {findAPortNotInUse, checkPortStatus} from 'portscanner';
-import WebSocket, {WebSocketServer} from 'ws';
+import type {ExternalDriver, WSServer} from '@appium/types';
+import {net, util} from 'appium/support.js';
+import {WebSocket, WebSocketServer} from 'ws';
 import type {RawData} from 'ws';
 
 import {CDP_METHODS_ROOT} from '../constants.js';
@@ -12,8 +10,6 @@ import type {DevtoolsPlugin} from '../plugin.js';
 import type {RequiredDriverProperties, WebviewProps, DevtoolsTargetsInfo, ProxyInfo} from '../types.js';
 import {toSocketNameAlias, fetchInterfaces, V4_BROADCAST_IP, V6_BROADCAST_IP} from '../utils.js';
 import {cdpInfo, cdpList} from './atoms.js';
-
-type Driver = BaseDriver<any, any, any, any, any, any>;
 
 const DEVTOOLS_SOCKET_PATTERN = /@[\w.]+_devtools_remote.*/;
 // TODO: Make it configurable
@@ -36,7 +32,7 @@ const WS_ENTITY_ID_PATTERN = /\/devtools\/(browser|page)\/([a-fA-F0-9-]+)/;
 export async function listDevtoolsTargets(
   this: DevtoolsPlugin,
   next: () => Promise<unknown>,
-  driver: Driver,
+  driver: ExternalDriver,
 ): Promise<DevtoolsTargetsInfo> {
   void next;
   void driver;
@@ -73,7 +69,7 @@ export async function listDevtoolsTargets(
 export async function proxyDevtoolsTarget(
   this: DevtoolsPlugin,
   next: () => Promise<any>,
-  driver: Driver,
+  driver: ExternalDriver,
   name: string,
   port?: number,
 ): Promise<ProxyInfo> {
@@ -90,7 +86,7 @@ export async function proxyDevtoolsTarget(
   let localPort: number;
   if (port) {
     localPort = port;
-    if ((await checkPortStatus(localPort)) !== 'closed') {
+    if ((await net.checkPortStatus(localPort)) !== 'closed') {
       throw new Error(
         `The selected port number #${localPort} to forward the Devtools socket '${name}' is busy. ` +
           `Try to provide another free port number instead.`,
@@ -99,7 +95,7 @@ export async function proxyDevtoolsTarget(
   } else {
     const [startPort, endPort] = DEVTOOLS_BIND_PORTS_RANGE;
     try {
-      localPort = await findAPortNotInUse(startPort, endPort);
+      localPort = await net.getFreePort({port: [startPort, endPort]});
     } catch {
       throw new Error(
         `Cannot find any free port in range ${startPort}..${endPort} ` +
@@ -236,7 +232,7 @@ export async function proxyDevtoolsTarget(
 export async function unproxyDevtoolsTarget(
   this: DevtoolsPlugin,
   next: () => Promise<any>,
-  driver: Driver,
+  driver: ExternalDriver,
   name: string,
 ): Promise<void> {
   void next;
@@ -269,18 +265,17 @@ export async function unproxyDevtoolsTarget(
   delete this.proxiedSessions[alias];
 }
 
-function requireDriverProperties(driver: Driver | null): RequiredDriverProperties {
-  const result: any = {};
-  for (const propName of ['adb', 'server']) {
-    if (!driver?.[propName as keyof Driver]) {
+function requireDriverProperties(driver: ExternalDriver | null): RequiredDriverProperties {
+  const props: Partial<RequiredDriverProperties> = driver ?? {};
+  for (const propName of ['adb', 'server'] as const) {
+    if (!props[propName]) {
       throw new Error(
         `The driver '${driver?.constructor.name}' does not have the required '${propName}' property. ` +
           'Is it a valid Android driver?',
       );
     }
-    result[propName] = driver[propName as keyof Driver];
   }
-  return result as RequiredDriverProperties;
+  return props as RequiredDriverProperties;
 }
 
 /**
@@ -376,7 +371,7 @@ async function collectMultipleDetails(
   const [startPort, endPort] = DEVTOOLS_LOOKUP_PORTS_RANGE;
   let localPort: number;
   try {
-    localPort = await findAPortNotInUse(startPort, endPort);
+    localPort = await net.getFreePort({port: [startPort, endPort]});
   } catch {
     throw new Error(
       `Cannot find any free port to forward candidate Devtools sockets ` + `in range ${startPort}..${endPort}`,
@@ -495,13 +490,13 @@ function prepareWebSocketForwarder(
       this.log.info(`Got an error from the upstream ${req.url}: ${e.message}`);
     });
     wsDownstream.once('close', (code: number | undefined, reason: Buffer) => {
-      this.log.info(`The downstream ${dstUrl} has been closed: ${code}, ` + `${reason || '(no reason given)'}`);
+      this.log.info(`The downstream ${dstUrl} has been closed: ${code}, ${reason.toString() || '(no reason given)'}`);
       if (wsUpstream.readyState === WebSocket.OPEN) {
         wsUpstream.close(code ?? WS_SERVER_ERROR, reason);
       }
     });
     wsUpstream.once('close', (code: number | undefined, reason: Buffer) => {
-      this.log.info(`The upstream ${req.url} has been closed: ${code}, ` + `${reason || '(no reason given)'}`);
+      this.log.info(`The upstream ${req.url} has been closed: ${code}, ${reason.toString() || '(no reason given)'}`);
       if (wsDownstream.readyState === WebSocket.OPEN) {
         wsDownstream.close();
       }
