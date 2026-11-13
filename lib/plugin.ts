@@ -1,15 +1,13 @@
 import type {ExecuteMethodMap, ExternalDriver, Plugin, PluginCommand} from '@appium/types';
 import {BasePlugin} from 'appium/plugin.js';
 import {util} from 'appium/support.js';
+import type {Express, Request, Response} from 'express';
 
 import {CDP_METHODS_ROOT} from './constants.js';
 import {log as logger} from './logger.js';
 import * as cmdMethods from './mixins/cmds.js';
 import * as proxyMethods from './mixins/proxy.js';
 import {registerPlugin, findPlugin} from './registry.js';
-
-import type {Express, Request, Response} from 'express';
-
 import type {ProxiedSession} from './types.js';
 
 type DevtoolsPluginMapType = Plugin & Record<string, PluginCommand>;
