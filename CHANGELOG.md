@@ -1,3 +1,15 @@
+## [3.0.0](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v2.1.0...v3.0.0) (2026-11-13)
+
+### ⚠ BREAKING CHANGES
+
+* Requires Appium ^4.0.0-beta.6 (peer dependency). No longer compatible with Appium 3.
+* Drops Node 20. The minimum is now ^22.22.2 || ^24.15.0 || >=26.0.0, matching Appium 4's engine range.
+* Default export removed: the package no longer has a default export. Use the named export instead: import {DevtoolsPlugin} from 'appium-devtools-plugin'.
+
+### Features
+
+* add Appium 4 support ([#91](https://github.com/mykola-mokhnach/appium-devtools-plugin/issues/91)) ([95e203e](https://github.com/mykola-mokhnach/appium-devtools-plugin/commit/95e203e8f82862d0192c6ff1021f0c521aeb612d))
+
 ## [2.1.0](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v2.0.2...v2.1.0) (2026-08-01)
 
 ### Features
