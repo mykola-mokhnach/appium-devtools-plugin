@@ -1,5 +1,4 @@
-import type {ExecuteMethodMap, Plugin, PluginCommand} from '@appium/types';
-import type {BaseDriver} from 'appium/driver.js';
+import type {ExecuteMethodMap, ExternalDriver, Plugin, PluginCommand} from '@appium/types';
 import {BasePlugin} from 'appium/plugin.js';
 import {util} from 'appium/support.js';
 
@@ -9,7 +8,6 @@ import * as cmdMethods from './mixins/cmds.js';
 import * as proxyMethods from './mixins/proxy.js';
 import {registerPlugin, findPlugin} from './registry.js';
 
-type Driver = BaseDriver<any, any, any, any, any>;
 import type {Express, Request, Response} from 'express';
 
 import type {ProxiedSession} from './types.js';
@@ -41,7 +39,7 @@ export class DevtoolsPlugin extends BasePlugin {
   listDevtoolsTargets = proxyMethods.listDevtoolsTargets;
   proxyDevtoolsTarget = proxyMethods.proxyDevtoolsTarget;
   unproxyDevtoolsTarget = proxyMethods.unproxyDevtoolsTarget;
-  private driverRef: WeakRef<Driver> | null = null;
+  private driverRef: WeakRef<ExternalDriver> | null = null;
 
   constructor(pluginName: string) {
     super(pluginName);
@@ -53,7 +51,7 @@ export class DevtoolsPlugin extends BasePlugin {
    *
    * @returns The driver instance or null if not available
    */
-  get driver(): Driver | null {
+  get driver(): ExternalDriver | null {
     return this.driverRef?.deref() ?? null;
   }
 
@@ -105,7 +103,7 @@ export class DevtoolsPlugin extends BasePlugin {
    * @param cmdArgs - Additional arguments for the command
    * @returns The result of the command execution
    */
-  async handle(next: () => Promise<any>, driver: Driver, cmdName: string, ...cmdArgs: any[]): Promise<any> {
+  async handle(next: () => Promise<any>, driver: ExternalDriver, cmdName: string, ...cmdArgs: any[]): Promise<any> {
     if (!this.driverRef && 'adb' in driver && driver.adb) {
       this.driverRef = new WeakRef(driver);
       this.log.info(`Successfully initialized with ${driver.constructor.name}`);

@@ -1,7 +1,6 @@
 import type {IncomingMessage} from 'node:http';
 
-import type {WSServer} from '@appium/types';
-import type {BaseDriver} from 'appium/driver.js';
+import type {ExternalDriver, WSServer} from '@appium/types';
 import {net, util} from 'appium/support.js';
 import {WebSocket, WebSocketServer} from 'ws';
 import type {RawData} from 'ws';
@@ -11,8 +10,6 @@ import type {DevtoolsPlugin} from '../plugin.js';
 import type {RequiredDriverProperties, WebviewProps, DevtoolsTargetsInfo, ProxyInfo} from '../types.js';
 import {toSocketNameAlias, fetchInterfaces, V4_BROADCAST_IP, V6_BROADCAST_IP} from '../utils.js';
 import {cdpInfo, cdpList} from './atoms.js';
-
-type Driver = BaseDriver<any, any, any, any, any>;
 
 const DEVTOOLS_SOCKET_PATTERN = /@[\w.]+_devtools_remote.*/;
 // TODO: Make it configurable
@@ -35,7 +32,7 @@ const WS_ENTITY_ID_PATTERN = /\/devtools\/(browser|page)\/([a-fA-F0-9-]+)/;
 export async function listDevtoolsTargets(
   this: DevtoolsPlugin,
   next: () => Promise<unknown>,
-  driver: Driver,
+  driver: ExternalDriver,
 ): Promise<DevtoolsTargetsInfo> {
   void next;
   void driver;
@@ -72,7 +69,7 @@ export async function listDevtoolsTargets(
 export async function proxyDevtoolsTarget(
   this: DevtoolsPlugin,
   next: () => Promise<any>,
-  driver: Driver,
+  driver: ExternalDriver,
   name: string,
   port?: number,
 ): Promise<ProxyInfo> {
@@ -235,7 +232,7 @@ export async function proxyDevtoolsTarget(
 export async function unproxyDevtoolsTarget(
   this: DevtoolsPlugin,
   next: () => Promise<any>,
-  driver: Driver,
+  driver: ExternalDriver,
   name: string,
 ): Promise<void> {
   void next;
@@ -268,18 +265,17 @@ export async function unproxyDevtoolsTarget(
   delete this.proxiedSessions[alias];
 }
 
-function requireDriverProperties(driver: Driver | null): RequiredDriverProperties {
-  const result: any = {};
-  for (const propName of ['adb', 'server']) {
-    if (!driver?.[propName as keyof Driver]) {
+function requireDriverProperties(driver: ExternalDriver | null): RequiredDriverProperties {
+  const props: Partial<RequiredDriverProperties> = driver ?? {};
+  for (const propName of ['adb', 'server'] as const) {
+    if (!props[propName]) {
       throw new Error(
         `The driver '${driver?.constructor.name}' does not have the required '${propName}' property. ` +
           'Is it a valid Android driver?',
       );
     }
-    result[propName] = driver[propName as keyof Driver];
   }
-  return result as RequiredDriverProperties;
+  return props as RequiredDriverProperties;
 }
 
 /**
