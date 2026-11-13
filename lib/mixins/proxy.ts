@@ -2,8 +2,7 @@ import type {IncomingMessage} from 'node:http';
 
 import type {WSServer} from '@appium/types';
 import type {BaseDriver} from 'appium/driver.js';
-import {util} from 'appium/support.js';
-import {findAPortNotInUse, checkPortStatus} from 'portscanner';
+import {net, util} from 'appium/support.js';
 import {WebSocket, WebSocketServer} from 'ws';
 import type {RawData} from 'ws';
 
@@ -90,7 +89,7 @@ export async function proxyDevtoolsTarget(
   let localPort: number;
   if (port) {
     localPort = port;
-    if ((await checkPortStatus(localPort)) !== 'closed') {
+    if ((await net.checkPortStatus(localPort)) !== 'closed') {
       throw new Error(
         `The selected port number #${localPort} to forward the Devtools socket '${name}' is busy. ` +
           `Try to provide another free port number instead.`,
@@ -99,7 +98,7 @@ export async function proxyDevtoolsTarget(
   } else {
     const [startPort, endPort] = DEVTOOLS_BIND_PORTS_RANGE;
     try {
-      localPort = await findAPortNotInUse(startPort, endPort);
+      localPort = await net.getFreePort({port: [startPort, endPort]});
     } catch {
       throw new Error(
         `Cannot find any free port in range ${startPort}..${endPort} ` +
@@ -376,7 +375,7 @@ async function collectMultipleDetails(
   const [startPort, endPort] = DEVTOOLS_LOOKUP_PORTS_RANGE;
   let localPort: number;
   try {
-    localPort = await findAPortNotInUse(startPort, endPort);
+    localPort = await net.getFreePort({port: [startPort, endPort]});
   } catch {
     throw new Error(
       `Cannot find any free port to forward candidate Devtools sockets ` + `in range ${startPort}..${endPort}`,
