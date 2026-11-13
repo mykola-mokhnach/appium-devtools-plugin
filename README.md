@@ -5,7 +5,7 @@ Afterwards this API could be used to establish a connection to it from an extern
 perform an extended automation, like [performance metrics gathering](https://www.selenium.dev/documentation/webdriver/bidirectional/chrome_devtools/#collect-performance-metrics) or [geolocation emulation](https://www.selenium.dev/documentation/webdriver/bidirectional/chrome_devtools/#emulate-geo-location-with-the-remote-webdriver).
 
 > [!IMPORTANT]
-> Since major version *1.0.0*, this plugin is only compatible with Appium 3.
+> Since major version *3.0.0*, this plugin is only compatible with Appium 4.
 
 ## Features
 

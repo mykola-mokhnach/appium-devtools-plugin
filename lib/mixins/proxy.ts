@@ -4,7 +4,7 @@ import type {WSServer} from '@appium/types';
 import type {BaseDriver} from 'appium/driver.js';
 import {util} from 'appium/support.js';
 import {findAPortNotInUse, checkPortStatus} from 'portscanner';
-import WebSocket, {WebSocketServer} from 'ws';
+import {WebSocket, WebSocketServer} from 'ws';
 import type {RawData} from 'ws';
 
 import {CDP_METHODS_ROOT} from '../constants.js';
@@ -13,7 +13,7 @@ import type {RequiredDriverProperties, WebviewProps, DevtoolsTargetsInfo, ProxyI
 import {toSocketNameAlias, fetchInterfaces, V4_BROADCAST_IP, V6_BROADCAST_IP} from '../utils.js';
 import {cdpInfo, cdpList} from './atoms.js';
 
-type Driver = BaseDriver<any, any, any, any, any, any>;
+type Driver = BaseDriver<any, any, any, any, any>;
 
 const DEVTOOLS_SOCKET_PATTERN = /@[\w.]+_devtools_remote.*/;
 // TODO: Make it configurable
@@ -495,13 +495,13 @@ function prepareWebSocketForwarder(
       this.log.info(`Got an error from the upstream ${req.url}: ${e.message}`);
     });
     wsDownstream.once('close', (code: number | undefined, reason: Buffer) => {
-      this.log.info(`The downstream ${dstUrl} has been closed: ${code}, ` + `${reason || '(no reason given)'}`);
+      this.log.info(`The downstream ${dstUrl} has been closed: ${code}, ${reason.toString() || '(no reason given)'}`);
       if (wsUpstream.readyState === WebSocket.OPEN) {
         wsUpstream.close(code ?? WS_SERVER_ERROR, reason);
       }
     });
     wsUpstream.once('close', (code: number | undefined, reason: Buffer) => {
-      this.log.info(`The upstream ${req.url} has been closed: ${code}, ` + `${reason || '(no reason given)'}`);
+      this.log.info(`The upstream ${req.url} has been closed: ${code}, ${reason.toString() || '(no reason given)'}`);
       if (wsDownstream.readyState === WebSocket.OPEN) {
         wsDownstream.close();
       }

@@ -2,8 +2,7 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import {describe, it} from 'node:test';
 
-import {fetchInterfaces, toSocketNameAlias} from '../../lib/utils.js';
-import {replaceDeep} from '../../lib/utils.js';
+import {fetchInterfaces, replaceDeep, toSocketNameAlias} from '../../lib/utils.js';
 
 describe('utils', function () {
   it('should compute a stable sha1 alias for a socket name', function () {

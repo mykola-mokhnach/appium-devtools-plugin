@@ -5,7 +5,7 @@ import {waitForCondition} from 'asyncbox';
 import axios from 'axios';
 import {remote as wdio} from 'webdriverio';
 import type {Browser} from 'webdriverio';
-import WebSocket from 'ws';
+import {WebSocket} from 'ws';
 
 const TEST_CAPS = {
   platformName: 'Android',

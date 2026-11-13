@@ -9,7 +9,7 @@ import * as cmdMethods from './mixins/cmds.js';
 import * as proxyMethods from './mixins/proxy.js';
 import {registerPlugin, findPlugin} from './registry.js';
 
-type Driver = BaseDriver<any, any, any, any, any, any>;
+type Driver = BaseDriver<any, any, any, any, any>;
 import type {Express, Request, Response} from 'express';
 
 import type {ProxiedSession} from './types.js';
@@ -17,7 +17,7 @@ import type {ProxiedSession} from './types.js';
 type DevtoolsPluginMapType = Plugin & Record<string, PluginCommand>;
 
 export class DevtoolsPlugin extends BasePlugin {
-  static readonly executeMethodMap: ExecuteMethodMap<DevtoolsPluginMapType> = {
+  static override readonly executeMethodMap: ExecuteMethodMap<DevtoolsPluginMapType> = {
     'devtools: listTargets': {
       command: 'listDevtoolsTargets',
     },
@@ -69,7 +69,7 @@ export class DevtoolsPlugin extends BasePlugin {
       const uuid = Array.isArray(req.params.uuid) ? req.params.uuid[0] : req.params.uuid;
       const plugin = findPlugin(uuid);
       if (!plugin) {
-        logger.debug(`Cannot find any plugin instance identified by ${req.params.uuid}. Is it still alive?`);
+        logger.debug(`Cannot find any plugin instance identified by ${uuid}. Is it still alive?`);
         res.status(404).send();
         return;
       }

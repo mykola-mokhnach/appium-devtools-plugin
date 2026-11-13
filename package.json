@@ -61,27 +61,26 @@
     "ws": "^8.13.0"
   },
   "devDependencies": {
-    "@appium/oxc-config": "^1.1.0",
-    "@appium/semantic-release-config": "^1.1.0",
-    "@appium/support": "^7.0.0",
-    "@appium/tsconfig": "^1.2.0",
-    "@appium/types": "^1.0.0",
+    "@appium/oxc-config": "^2.0.0-beta.2",
+    "@appium/semantic-release-config": "^2.0.0-beta.1",
+    "@appium/tsconfig": "^2.0.0-beta.1",
+    "@appium/types": "^2.0.0-beta.5",
     "@types/express": "^5.0.3",
     "@types/node": "^26.1.2",
     "@types/portscanner": "^2.1.4",
     "@types/sinon": "^22.0.0",
     "asyncbox": "^6.1.0",
     "sinon": "^22.0.0",
-    "webdriverio": "^9.4.1"
+    "webdriverio": "^10.1.0"
   },
   "peerDependencies": {
-    "appium": "^3.0.0-rc.2"
+    "appium": "^4.0.0-beta.6"
   },
   "typedoc": {
     "entryPoint": "./lib/plugin.ts"
   },
   "engines": {
-    "node": "^20.19.0 || ^22.12.0 || >=24.0.0",
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0",
     "npm": ">=10"
   },
   "appium": {
