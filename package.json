@@ -19,8 +19,7 @@
   "author": "Mykola Mokhnach",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mykola-mokhnach/appium-devtools-plugin.git",
-    "directory": "packages/images-plugin"
+    "url": "https://github.com/mykola-mokhnach/appium-devtools-plugin.git"
   },
   "files": [
     "build/lib",
