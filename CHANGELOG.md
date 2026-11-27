@@ -1,3 +1,9 @@
+## [3.0.1](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v3.0.0...v3.0.1) (2026-11-27)
+
+### Miscellaneous Chores
+
+* bump @appium/types to v3 ([#94](https://github.com/mykola-mokhnach/appium-devtools-plugin/issues/94)) ([d4ec2d0](https://github.com/mykola-mokhnach/appium-devtools-plugin/commit/d4ec2d014f7c80e2ed4499a33e984bddaf3a5191))
+
 ## [3.0.0](https://github.com/mykola-mokhnach/appium-devtools-plugin/compare/v2.1.0...v3.0.0) (2026-11-13)
 
 ### ⚠ BREAKING CHANGES
